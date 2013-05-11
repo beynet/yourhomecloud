@@ -1,4 +1,4 @@
-package info.yourhomecloud.network.services;
+package info.yourhomecloud.network.rmi;
 
 import java.net.ServerSocket;
 import java.rmi.RemoteException;

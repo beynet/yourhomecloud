@@ -12,6 +12,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class FirstTest extends RootTest{
@@ -47,6 +48,7 @@ public class FirstTest extends RootTest{
     }
     
     @Test
+    @Ignore
     public void testBroadcastListener() throws IOException, InterruptedException {
         BroadcasterListener list = new BroadcasterListener(31003,31004);
         list.start();
@@ -54,6 +56,7 @@ public class FirstTest extends RootTest{
     }
     
     @Test
+    @Ignore
     public void testBroadcast2() throws IOException, InterruptedException {
         Broadcaster brThread = new Broadcaster(31003, 31004);
         brThread.start();

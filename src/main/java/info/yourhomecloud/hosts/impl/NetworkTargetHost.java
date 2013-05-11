@@ -1,7 +1,7 @@
 package info.yourhomecloud.hosts.impl;
 
 import info.yourhomecloud.hosts.TargetHost;
-import info.yourhomecloud.network.services.FileUtils;
+import info.yourhomecloud.network.rmi.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;

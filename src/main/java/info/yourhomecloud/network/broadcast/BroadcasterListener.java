@@ -3,7 +3,6 @@ package info.yourhomecloud.network.broadcast;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketTimeoutException;
 
 import org.apache.log4j.Logger;
 

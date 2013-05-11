@@ -4,7 +4,7 @@ import info.yourhomecloud.RootTest;
 import info.yourhomecloud.files.impl.FileSyncerImpl;
 import info.yourhomecloud.hosts.impl.LocalTargetHost;
 import info.yourhomecloud.hosts.impl.NetworkTargetHost;
-import info.yourhomecloud.network.services.RMIUtils;
+import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
