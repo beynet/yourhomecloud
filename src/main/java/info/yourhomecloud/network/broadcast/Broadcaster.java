@@ -35,6 +35,7 @@ public class Broadcaster extends Thread {
         }
         byte[] buf = os.toByteArray();
         while(true) {
+            logger.debug("sending broadcast packet to "+broadCastAdress.getHostAddress()+" port="+port);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, broadCastAdress, port);
             try {
                 this.socket.send(packet);
