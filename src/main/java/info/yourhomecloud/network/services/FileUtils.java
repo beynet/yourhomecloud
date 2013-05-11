@@ -1,4 +1,4 @@
-package info.yourhomecloud.network;
+package info.yourhomecloud.network.services;
 
 import java.io.IOException;
 import java.rmi.Remote;

@@ -1,4 +1,4 @@
-package info.yourhomecloud.network;
+package info.yourhomecloud.network.services;
 
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.hosts.impl.LocalTargetHost;

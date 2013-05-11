@@ -4,7 +4,7 @@ import info.yourhomecloud.RootTest;
 import info.yourhomecloud.files.impl.FileSyncerImpl;
 import info.yourhomecloud.hosts.impl.LocalTargetHost;
 import info.yourhomecloud.hosts.impl.NetworkTargetHost;
-import info.yourhomecloud.network.RMIUtils;
+import info.yourhomecloud.network.services.RMIUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,8 +35,8 @@ public class FilesSyncTest extends RootTest{
     
     @Test
     public void remoteCopy() throws IOException, NotBoundException {
-        RMIUtils rmiUtils = new RMIUtils(10800);
+        RMIUtils rmiUtils = new RMIUtils();
         FileSyncerImpl fs = new FileSyncerImpl();
-        fs.sync(Paths.get("/Users/beynet/Desktop"), new NetworkTargetHost("127.0.0.1", 10800));
+        fs.sync(Paths.get("/Users/beynet/Desktop"), new NetworkTargetHost("127.0.0.1", rmiUtils.getPort()));
     }
 }
