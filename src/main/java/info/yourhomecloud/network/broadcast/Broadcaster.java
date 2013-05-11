@@ -20,7 +20,7 @@ public class Broadcaster extends Thread {
         this.rmiPort = rmiPort;
         List<List<InetAddress>> adresses = NetworkUtils.getAdresses();
         if (adresses==null || adresses.size()==0) throw new IOException("unable to list current computer network interfaces");
-        this.broadCastAdress = adresses.get(0).get(0);
+        this.broadCastAdress = adresses.get(0).get(1);
     }
     
     @Override
