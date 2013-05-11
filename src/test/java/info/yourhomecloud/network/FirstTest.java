@@ -53,4 +53,10 @@ public class FirstTest extends RootTest{
         list.join();
     }
     
+    @Test
+    public void testBroadcast2() throws IOException, InterruptedException {
+        Broadcaster brThread = new Broadcaster(31003, 31004);
+        brThread.start();
+        brThread.join();
+    }
 }
