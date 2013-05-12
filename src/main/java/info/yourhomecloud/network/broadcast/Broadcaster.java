@@ -26,7 +26,7 @@ public class Broadcaster extends Thread {
     @Override
     public void run() {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        StringBuilder sb = new StringBuilder(BROADCAST_BEGIN);
+        StringBuilder sb = new StringBuilder(NetworkUtils.BROADCAST_BEGIN);
         sb.append(rmiPort);
         try {
             os.write(sb.toString().getBytes());
@@ -64,5 +64,4 @@ public class Broadcaster extends Thread {
     
     private final static Logger logger = Logger.getLogger(Broadcaster.class);
     
-    public final static String BROADCAST_BEGIN = "yourhomecloud=";
 }

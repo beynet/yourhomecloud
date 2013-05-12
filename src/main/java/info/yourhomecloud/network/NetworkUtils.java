@@ -45,4 +45,6 @@ public class NetworkUtils {
         }
         return(adresses);
     }
+    
+    public final static String BROADCAST_BEGIN = "yourhomecloud=";
 }
