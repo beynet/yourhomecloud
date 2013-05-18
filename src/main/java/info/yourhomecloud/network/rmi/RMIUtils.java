@@ -1,6 +1,7 @@
 package info.yourhomecloud.network.rmi;
 
 import java.net.ServerSocket;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,8 +14,6 @@ public class RMIUtils {
     private int rmiPort;
     private Registry registry;
 
-    
-    
     
     public RMIUtils() {
         try {
@@ -48,6 +47,12 @@ public class RMIUtils {
 //        ShellExecutor _executorStub =(ShellExecutor)UnicastRemoteObject.exportObject(this,rmiPort);
 //        registry.rebind("ShellExecutor", _executorStub);
 //        System.out.println("Shell executor bound");
+    }
+    
+    public static FileUtils getRemoteFileUtils(String host,int port) throws RemoteException, NotBoundException {
+        String name = FileUtils.class.getCanonicalName();
+        Registry registry = LocateRegistry.getRegistry(host, port);
+        return((FileUtils) registry.lookup(name));
     }
     
     private final static Logger logger = Logger.getLogger(RMIUtils.class);

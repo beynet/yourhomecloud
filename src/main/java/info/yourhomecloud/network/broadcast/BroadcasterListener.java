@@ -26,7 +26,6 @@ public class BroadcasterListener extends Thread{
         }
         datagramSocket.close();
         String messageString = new String(buf,0,p.getLength());
-        
         logger.info("host from which broadcast was received "+p.getAddress().getHostAddress());
         
     }

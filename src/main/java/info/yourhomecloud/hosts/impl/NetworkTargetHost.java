@@ -2,6 +2,7 @@ package info.yourhomecloud.hosts.impl;
 
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.network.rmi.FileUtils;
+import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,17 +10,13 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 public class NetworkTargetHost implements TargetHost {
     
     FileUtils fileUtils;
     
     public NetworkTargetHost(String host,int port) throws RemoteException, NotBoundException {
-        String name = FileUtils.class.getCanonicalName();
-        Registry registry = LocateRegistry.getRegistry(host, port);
-        fileUtils = (FileUtils) registry.lookup(name);
+        fileUtils = RMIUtils.getRemoteFileUtils(host, port);
     }
 
     @Override

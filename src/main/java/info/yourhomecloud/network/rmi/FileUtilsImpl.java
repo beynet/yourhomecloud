@@ -1,5 +1,7 @@
 package info.yourhomecloud.network.rmi;
 
+import info.yourhomecloud.configuration.Configuration;
+import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.hosts.impl.LocalTargetHost;
 
@@ -8,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.rmi.RemoteException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -51,6 +55,11 @@ public class FileUtilsImpl implements FileUtils {
         logger.debug("writing file "+filePath);
         Files.write(filePath, file);
         Files.setLastModifiedTime(filePath, FileTime.fromMillis(modified));
+    }
+    
+    @Override
+    public List<HostConfigurationBean> updateHosts(List<HostConfigurationBean> hosts) throws RemoteException {
+        return(Configuration.getConfiguration().updateOtherHostsConfiguration(hosts));
     }
     
     private final static Logger logger = Logger.getLogger(FileUtilsImpl.class);

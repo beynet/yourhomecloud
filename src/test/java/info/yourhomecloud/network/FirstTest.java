@@ -38,9 +38,9 @@ public class FirstTest extends RootTest{
         
         System.out.println("host from which broadcast was received "+p.getAddress().getHostAddress());
         //expectin message starting with Broadcaster.BROADCAST_BEGIN
-        assertThat(Boolean.valueOf(messageString.startsWith(Broadcaster.BROADCAST_BEGIN)), is(Boolean.TRUE));
+        assertThat(Boolean.valueOf(messageString.startsWith(NetworkUtils.BROADCAST_BEGIN)), is(Boolean.TRUE));
        
-        String port = messageString.substring(Broadcaster.BROADCAST_BEGIN.length());
+        String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         System.out.println("port read = "+port);
         assertThat(port, is("31004"));
         brThread.interrupt();
