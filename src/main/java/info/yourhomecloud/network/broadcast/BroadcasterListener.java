@@ -1,5 +1,8 @@
 package info.yourhomecloud.network.broadcast;
 
+import info.yourhomecloud.configuration.Configuration;
+import info.yourhomecloud.network.NetworkUtils;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -27,7 +30,8 @@ public class BroadcasterListener extends Thread{
         datagramSocket.close();
         String messageString = new String(buf,0,p.getLength());
         logger.info("host from which broadcast was received "+p.getAddress().getHostAddress());
-        
+        String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
+        Configuration.getConfiguration();
     }
     
     private final static Logger logger = Logger.getLogger(BroadcasterListener.class);

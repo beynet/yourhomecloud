@@ -74,6 +74,10 @@ public class Configuration {
             throw new RuntimeException(e);
         }
     }
+    
+    public void addDirectoryToBeSaved(Path dir) {
+        configuration.getLocalhost().getDirectoriesToBeSaved().add(dir.toString());
+    }
 
     public void setMainHost(String hostAddr,int rmiPort) throws RemoteException, NotBoundException {
         this.mainHostAddr = hostAddr;

@@ -4,23 +4,24 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.nio.file.Paths;
+import info.yourhomecloud.RootTest;
+
 import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.Test;
 
-public class ConfigurationTests {
+public class ConfigurationTests extends RootTest {
 
     @Test
     public void localHostKeyNotNull() {
-        Configuration configuration = Configuration.getConfiguration(Paths.get("/tmp"));
+        Configuration configuration = Configuration.getConfiguration();
         assertThat(configuration.getCurrentHostKey(), notNullValue());
     }
     
     @Test
     public void updateHosts() {
-        Configuration configuration = Configuration.getConfiguration(Paths.get("/tmp"));
+        Configuration configuration = Configuration.getConfiguration();
         configuration.clearOtherHostsConfiguration();
         String key1 = "abcd";
         String key2 = "abcde";
@@ -69,14 +70,6 @@ public class ConfigurationTests {
             assertThat(host2Found.getLastUpdateDate(), is(host2.getLastUpdateDate()));
         }
 
-
-    }
-
-    @Test
-    public void longT() {
-        Long t1 = Long.valueOf(3);
-        Long t2 = null;
-        System.out.println(t1.compareTo(t2));
     }
 
 }

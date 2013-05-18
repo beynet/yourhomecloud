@@ -3,6 +3,7 @@ package info.yourhomecloud.network;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import info.yourhomecloud.RootTest;
+import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.broadcast.Broadcaster;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
 
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.Ignore;
@@ -50,6 +52,7 @@ public class FirstTest extends RootTest{
     @Test
     @Ignore
     public void testBroadcastListener() throws IOException, InterruptedException {
+        Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/home/beynet"));
         BroadcasterListener list = new BroadcasterListener(31003,31004);
         list.start();
         list.join();
@@ -58,6 +61,7 @@ public class FirstTest extends RootTest{
     @Test
     @Ignore
     public void testBroadcast2() throws IOException, InterruptedException {
+        Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
         Broadcaster brThread = new Broadcaster(31003, 31004);
         brThread.start();
         brThread.join();
