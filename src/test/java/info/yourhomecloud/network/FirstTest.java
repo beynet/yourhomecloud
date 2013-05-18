@@ -50,7 +50,6 @@ public class FirstTest extends RootTest{
     }
     
     @Test
-    @Ignore
     public void testBroadcastListener() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/home/beynet"));
         BroadcasterListener list = new BroadcasterListener(31003,31004);
