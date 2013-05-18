@@ -6,6 +6,7 @@ import info.yourhomecloud.RootTest;
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.broadcast.Broadcaster;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
+import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -60,7 +61,8 @@ public class FirstTest extends RootTest{
     @Test
     public void testBroadcast2() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
-        Broadcaster brThread = new Broadcaster(31003, 31004);
+        RMIUtils rmi = new RMIUtils();
+        Broadcaster brThread = new Broadcaster(31003, rmi.getPort());
         brThread.start();
         brThread.join();
     }
