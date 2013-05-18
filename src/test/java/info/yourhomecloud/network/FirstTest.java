@@ -59,7 +59,6 @@ public class FirstTest extends RootTest{
     }
     
     @Test
-    @Ignore
     public void testBroadcast2() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
         Broadcaster brThread = new Broadcaster(31003, 31004);

@@ -74,9 +74,12 @@ public class Configuration {
             throw new RuntimeException(e);
         }
     }
-    
+
     public void addDirectoryToBeSaved(Path dir) {
-        configuration.getLocalhost().getDirectoriesToBeSaved().add(dir.toString());
+        if (!configuration.getLocalhost().getDirectoriesToBeSaved().contains(dir.toString())) {
+            configuration.getLocalhost().getDirectoriesToBeSaved().add(dir.toString());
+            saveConfiguration();
+        }
     }
 
     public void setMainHost(String hostAddr,int rmiPort) throws RemoteException, NotBoundException {
@@ -136,14 +139,14 @@ public class Configuration {
         saveConfiguration();
         return configuration.getOtherHosts();
     }
-    
+
     /**
      * clear the list of know hosts
      */
     protected void clearOtherHostsConfiguration() {
         configuration.getOtherHosts().clear();
     }
-    
+
     protected ConfigurationBean getConfigurationBean() {
         return configuration;
     }
