@@ -24,7 +24,7 @@ public class NetworkUtils {
                 NetworkInterface iface = (NetworkInterface) list.nextElement();
 
                 if(iface == null) continue;
-                if(!iface.isLoopback() && iface.isUp() && !iface.isVirtual()) {
+                if(!iface.isLoopback() && iface.isUp() && !iface.isVirtual() && !iface.isPointToPoint()) {
                     Iterator<InterfaceAddress> it = iface.getInterfaceAddresses().iterator();
                     while (it.hasNext()) {
                         InterfaceAddress interfaceAddress = it.next();
