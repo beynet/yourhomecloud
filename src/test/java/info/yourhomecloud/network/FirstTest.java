@@ -13,6 +13,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.file.Paths;
+import java.rmi.NotBoundException;
 import java.util.List;
 
 import org.junit.Ignore;
@@ -51,11 +52,12 @@ public class FirstTest extends RootTest{
     }
     
     @Test
-    public void testBroadcastListener() throws IOException, InterruptedException {
-        Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/home/beynet"));
+    public void testBroadcastListener() throws IOException, InterruptedException, NotBoundException {
+        Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/beynet/Desktop"));
         BroadcasterListener list = new BroadcasterListener(31003,31004);
         list.start();
         list.join();
+        Configuration.getConfiguration().saveLocalFilesToMainHost();
     }
     
     @Test
