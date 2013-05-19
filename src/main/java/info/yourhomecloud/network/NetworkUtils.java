@@ -1,5 +1,6 @@
 package info.yourhomecloud.network;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -45,6 +46,21 @@ public class NetworkUtils {
         }
         return(adresses);
     }
+    
+    public static InetAddress getFirstBroadcastAddress() throws IOException {
+        List<List<InetAddress>> adresses = NetworkUtils.getAdresses();
+        if (adresses==null || adresses.size()==0) throw new IOException("unable to list current computer network interfaces");
+        return adresses.get(0).get(1);
+    }
+    
+    public static InetAddress getFirstAddress() throws IOException {
+        List<List<InetAddress>> adresses = NetworkUtils.getAdresses();
+        if (adresses==null || adresses.size()==0) throw new IOException("unable to list current computer network interfaces");
+        return adresses.get(0).get(0);
+    }
+    
+    
+    
     
     public final static String BROADCAST_BEGIN = "yourhomecloud=";
 }
