@@ -16,12 +16,13 @@ import org.apache.log4j.Logger;
 public class RMIUtils {
     private int rmiPort;
     private Registry registry;
-
+    private String address;
 
     public RMIUtils() {
         try {
             InetAddress firstAddress = NetworkUtils.getFirstAddress();
-            System.setProperty("java.rmi.server.hostname", firstAddress.getHostAddress());
+            this.address = firstAddress.getHostAddress();
+            System.setProperty("java.rmi.server.hostname", this.address);
             ServerSocket socket= new ServerSocket(0);
             rmiPort = socket.getLocalPort();
             socket.close(); 
@@ -41,7 +42,9 @@ public class RMIUtils {
             throw new RuntimeException(e);
         }
     }
-
+    public String getAddress() {
+        return address;
+    }
     public int getPort() {
         return this.rmiPort;
     }
