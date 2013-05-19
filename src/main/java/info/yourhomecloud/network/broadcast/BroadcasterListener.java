@@ -36,15 +36,8 @@ public class BroadcasterListener extends Thread{
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         try {
             Configuration.getConfiguration().setMainHost(p.getAddress().getHostAddress(), Integer.valueOf(port).intValue());
-        } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NotBoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.error("error updating main host",e);
         }
     }
     

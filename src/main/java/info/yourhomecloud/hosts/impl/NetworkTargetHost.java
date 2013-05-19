@@ -1,5 +1,6 @@
 package info.yourhomecloud.hosts.impl;
 
+import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
@@ -21,23 +22,23 @@ public class NetworkTargetHost implements TargetHost {
 
     @Override
     public void createDirectoryIfNotExist(Path rel) throws IOException {
-        fileUtils.createDirectoryIfNotExist("truc", rel.toString());
+        fileUtils.createDirectoryIfNotExist(Configuration.getConfiguration().getCurrentHostKey(), rel.toString());
     }
 
     @Override
     public boolean isFileExistingAndNotModifiedSince(Path rel, long millis) throws IOException {
-        return fileUtils.isFileExistingAndNotModifiedSince("truc", rel.toString(), millis);
+        return fileUtils.isFileExistingAndNotModifiedSince(Configuration.getConfiguration().getCurrentHostKey(), rel.toString(), millis);
     }
 
     @Override
     public void copyFile(Path file, Path rel) throws IOException {
         BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-        fileUtils.copyFile("truc", Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), rel.toString());
+        fileUtils.copyFile(Configuration.getConfiguration().getCurrentHostKey(), Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), rel.toString());
     }
 
     @Override
     public boolean isFileExisting(Path rel) throws IOException {
-        return fileUtils.isFileExisting("truc", rel.toString());
+        return fileUtils.isFileExisting(Configuration.getConfiguration().getCurrentHostKey(), rel.toString());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package info.yourhomecloud.network.rmi;
 
 import info.yourhomecloud.configuration.Configuration;
-import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.hosts.impl.LocalTargetHost;
 
@@ -10,15 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
-import java.rmi.RemoteException;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 public class FileUtilsImpl implements FileUtils {
 
     private Path getTargetPathFromClient(String client) {
-        return Paths.get("/tmp/DesktopRemoteCP");
+        return Configuration.getConfiguration().getConfigurationPath().resolve(Paths.get(client));
     }
     
     private TargetHost getTargetHostFromCient(String client) {

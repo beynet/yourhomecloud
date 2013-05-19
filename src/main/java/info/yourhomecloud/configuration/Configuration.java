@@ -1,9 +1,13 @@
 package info.yourhomecloud.configuration;
 
+import info.yourhomecloud.files.impl.FileSyncerImpl;
+import info.yourhomecloud.hosts.impl.NetworkTargetHost;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -28,6 +32,10 @@ public class Configuration {
         if (!Files.exists(configDirectory)) throw new IllegalArgumentException("Directory "+configDirectory+" does not exist");
         if (!Files.isDirectory(configDirectory)) throw new IllegalArgumentException("File "+configDirectory+" is not a directory");
         readConfiguration();
+    }
+    
+    public Path getConfigurationPath() {
+        return this.configDirectory;
     }
 
     /**
@@ -92,6 +100,13 @@ public class Configuration {
         info.yourhomecloud.network.rmi.Configuration remoteConfiguration = RMIUtils.getRemoteConfiguration(hostAddr, rmiPort);
         List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts);
         updateOtherHostsConfiguration(updateHosts);
+    }
+    
+    public void saveLocalFilesToMainHost() throws RemoteException, IOException, NotBoundException {
+        FileSyncerImpl fs = new FileSyncerImpl();
+        for (String dir : configuration.getLocalhost().getDirectoriesToBeSaved()) {
+            fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort));
+        }
     }
 
     /**
