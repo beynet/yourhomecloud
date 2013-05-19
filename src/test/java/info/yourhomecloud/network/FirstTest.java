@@ -63,7 +63,6 @@ public class FirstTest extends RootTest{
     public void testBroadcast2() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
         RMIUtils rmi = new RMIUtils();
-        rmi.storeObject();
         Broadcaster brThread = new Broadcaster(31003, rmi.getPort());
         brThread.start();
         brThread.join();
