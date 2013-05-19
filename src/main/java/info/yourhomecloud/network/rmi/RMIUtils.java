@@ -41,12 +41,9 @@ public class RMIUtils {
         return this.rmiPort;
     }
     
-    public void storeObject() throws RemoteException {
+    private void storeObject() throws RemoteException {
         FileUtils fuStub = (FileUtils) UnicastRemoteObject.exportObject(new FileUtilsImpl(),rmiPort);
         registry.rebind(FileUtils.class.getCanonicalName(), fuStub);
-//        ShellExecutor _executorStub =(ShellExecutor)UnicastRemoteObject.exportObject(this,rmiPort);
-//        registry.rebind("ShellExecutor", _executorStub);
-//        System.out.println("Shell executor bound");
     }
     
     public static FileUtils getRemoteFileUtils(String host,int port) throws RemoteException, NotBoundException {
