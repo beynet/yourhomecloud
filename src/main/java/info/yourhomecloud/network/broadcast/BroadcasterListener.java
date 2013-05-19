@@ -2,10 +2,13 @@ package info.yourhomecloud.network.broadcast;
 
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
+import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +34,18 @@ public class BroadcasterListener extends Thread{
         String messageString = new String(buf,0,p.getLength());
         logger.info("host from which broadcast was received "+p.getAddress().getHostAddress());
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
-        Configuration.getConfiguration();
+        try {
+            Configuration.getConfiguration().setMainHost(p.getAddress().getHostAddress(), Integer.valueOf(port));
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NotBoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     private final static Logger logger = Logger.getLogger(BroadcasterListener.class);
