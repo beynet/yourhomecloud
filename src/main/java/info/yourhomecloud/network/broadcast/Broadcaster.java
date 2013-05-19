@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -18,9 +17,7 @@ public class Broadcaster extends Thread {
         this.socket.setBroadcast(true);
         this.port = port;
         this.rmiPort = rmiPort;
-        List<List<InetAddress>> adresses = NetworkUtils.getAdresses();
-        if (adresses==null || adresses.size()==0) throw new IOException("unable to list current computer network interfaces");
-        this.broadCastAdress = adresses.get(0).get(1);
+        this.broadCastAdress = NetworkUtils.getFirstBroadcastAddress();
     }
     
     @Override
@@ -60,7 +57,6 @@ public class Broadcaster extends Thread {
     private DatagramSocket socket;
     private int port ;
     private InetAddress broadCastAdress ;
-    private InetAddress sourceAdress ;
     
     private final static Logger logger = Logger.getLogger(Broadcaster.class);
     
