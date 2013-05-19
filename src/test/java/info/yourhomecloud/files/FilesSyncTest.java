@@ -35,8 +35,7 @@ public class FilesSyncTest extends RootTest{
     
     @Test
     public void remoteCopy() throws IOException, NotBoundException {
-        RMIUtils rmiUtils = new RMIUtils();
         FileSyncerImpl fs = new FileSyncerImpl();
-        fs.sync(Paths.get("/Users/beynet/Desktop"), new NetworkTargetHost("127.0.0.1", rmiUtils.getPort()));
+        fs.sync(Paths.get("/Users/beynet/Desktop"), new NetworkTargetHost("127.0.0.1", RMIUtils.getRMIUtils().getPort()));
     }
 }

@@ -19,7 +19,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.apache.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class FirstTest extends RootTest{
@@ -75,8 +74,7 @@ public class FirstTest extends RootTest{
     @Test
     public void testBroadcast2() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
-        RMIUtils rmi = new RMIUtils();
-        Broadcaster brThread = new Broadcaster(31003, rmi.getPort());
+        Broadcaster brThread = new Broadcaster(31003, RMIUtils.getRMIUtils().getPort());
         brThread.start();
         brThread.join();
     }

@@ -2,13 +2,10 @@ package info.yourhomecloud.network.broadcast;
 
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
-import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 

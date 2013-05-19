@@ -18,7 +18,7 @@ public class RMIUtils {
     private Registry registry;
     private String address;
 
-    public RMIUtils() {
+    private RMIUtils() {
         try {
             InetAddress firstAddress = NetworkUtils.getFirstAddress();
             this.address = firstAddress.getHostAddress();
@@ -68,6 +68,11 @@ public class RMIUtils {
         Registry registry = LocateRegistry.getRegistry(host, port);
         return((Configuration) registry.lookup(name));
     }
+    
+    public static RMIUtils getRMIUtils() {
+        return _rmiUtils;
+    }
 
     private final static Logger logger = Logger.getLogger(RMIUtils.class);
+    private final static RMIUtils _rmiUtils = new RMIUtils();
 }

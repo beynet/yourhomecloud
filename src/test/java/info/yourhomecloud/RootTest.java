@@ -22,8 +22,7 @@ public abstract class RootTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Configuration configuration = 
-                Configuration.getConfiguration(conf);
+        Configuration.getConfiguration(conf);
     }
 
 
