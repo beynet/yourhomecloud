@@ -1,6 +1,5 @@
 package info.yourhomecloud.configuration;
 
-import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.nio.file.Files;
@@ -90,8 +89,8 @@ public class Configuration {
         List<HostConfigurationBean> hosts = new ArrayList<>();
         hosts.addAll(configuration.getOtherHosts());
         hosts.add(configuration.getLocalhost());
-        FileUtils remoteFileUtils = RMIUtils.getRemoteFileUtils(hostAddr, rmiPort);
-        List<HostConfigurationBean> updateHosts = remoteFileUtils.updateHosts(hosts);
+        info.yourhomecloud.network.rmi.Configuration remoteConfiguration = RMIUtils.getRemoteConfiguration(hostAddr, rmiPort);
+        List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts);
         updateOtherHostsConfiguration(updateHosts);
     }
 
@@ -117,6 +116,11 @@ public class Configuration {
         return configuration.getLocalhost().getHostKey();
     }
 
+    /**
+     * update host list of host known by current host.
+     * @param update
+     * @return
+     */
     public List<HostConfigurationBean> updateOtherHostsConfiguration(List<HostConfigurationBean> update) {
         Map<String, HostConfigurationBean> newHostsMap     = ConfigurationBean.getOtherHostsMap(update);
         Map<String, HostConfigurationBean> currentHostsMap = ConfigurationBean.getOtherHostsMap(configuration.getOtherHosts());

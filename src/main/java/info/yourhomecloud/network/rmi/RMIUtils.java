@@ -36,7 +36,7 @@ public class RMIUtils {
             }
             registry = LocateRegistry.createRegistry(rmiPort);
             logger.info("registry created");
-            storeObject();
+            storeObjects();
         }catch(RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -46,9 +46,12 @@ public class RMIUtils {
         return this.rmiPort;
     }
 
-    private void storeObject() throws RemoteException {
+    private void storeObjects() throws RemoteException {
         FileUtils fuStub = (FileUtils) UnicastRemoteObject.exportObject(new FileUtilsImpl(),rmiPort);
         registry.rebind(FileUtils.class.getCanonicalName(), fuStub);
+        
+        Configuration confStub = (Configuration) UnicastRemoteObject.exportObject(new ConfigurationImpl(),rmiPort);
+        registry.rebind(Configuration.class.getCanonicalName(), confStub);
     }
 
     public static FileUtils getRemoteFileUtils(String host,int port) throws RemoteException, NotBoundException {
@@ -57,7 +60,11 @@ public class RMIUtils {
         return((FileUtils) registry.lookup(name));
     }
 
-
+    public static Configuration getRemoteConfiguration(String host,int port) throws RemoteException, NotBoundException {
+        String name = Configuration.class.getCanonicalName();
+        Registry registry = LocateRegistry.getRegistry(host, port);
+        return((Configuration) registry.lookup(name));
+    }
 
     private final static Logger logger = Logger.getLogger(RMIUtils.class);
 }

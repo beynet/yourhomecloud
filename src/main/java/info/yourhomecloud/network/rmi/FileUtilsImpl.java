@@ -57,10 +57,5 @@ public class FileUtilsImpl implements FileUtils {
         Files.setLastModifiedTime(filePath, FileTime.fromMillis(modified));
     }
     
-    @Override
-    public List<HostConfigurationBean> updateHosts(List<HostConfigurationBean> hosts) throws RemoteException {
-        return(Configuration.getConfiguration().updateOtherHostsConfiguration(hosts));
-    }
-    
     private final static Logger logger = Logger.getLogger(FileUtilsImpl.class);
 }
