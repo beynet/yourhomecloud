@@ -1,5 +1,8 @@
 package info.yourhomecloud.network.rmi;
 
+import info.yourhomecloud.network.NetworkUtils;
+
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -14,20 +17,22 @@ public class RMIUtils {
     private int rmiPort;
     private Registry registry;
 
-    
+
     public RMIUtils() {
         try {
-          ServerSocket socket= new ServerSocket(0);
-          rmiPort = socket.getLocalPort();
-          socket.close(); 
+            InetAddress firstAddress = NetworkUtils.getFirstAddress();
+            System.setProperty("java.rmi.server.hostname", firstAddress.getHostAddress());
+            ServerSocket socket= new ServerSocket(0);
+            rmiPort = socket.getLocalPort();
+            socket.close(); 
         } catch (Exception e) { rmiPort = -1; }
         try {
-            logger.info("Creating rmi rgistry at port "+rmiPort);
+            logger.info("Creating rmi registry at port "+rmiPort);
             registry = LocateRegistry.getRegistry(rmiPort);
             try {
                 if (registry!=null) UnicastRemoteObject.unexportObject(registry,true);
             }catch(Exception e) {
-                
+
             }
             registry = LocateRegistry.createRegistry(rmiPort);
             logger.info("registry created");
@@ -36,23 +41,23 @@ public class RMIUtils {
             throw new RuntimeException(e);
         }
     }
-    
+
     public int getPort() {
         return this.rmiPort;
     }
-    
+
     private void storeObject() throws RemoteException {
         FileUtils fuStub = (FileUtils) UnicastRemoteObject.exportObject(new FileUtilsImpl(),rmiPort);
         registry.rebind(FileUtils.class.getCanonicalName(), fuStub);
     }
-    
+
     public static FileUtils getRemoteFileUtils(String host,int port) throws RemoteException, NotBoundException {
         String name = FileUtils.class.getCanonicalName();
         Registry registry = LocateRegistry.getRegistry(host, port);
         return((FileUtils) registry.lookup(name));
     }
-    
-    
-    
+
+
+
     private final static Logger logger = Logger.getLogger(RMIUtils.class);
 }
