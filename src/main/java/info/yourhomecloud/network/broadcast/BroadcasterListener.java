@@ -10,7 +10,10 @@ import java.net.DatagramSocket;
 import org.apache.log4j.Logger;
 
 public class BroadcasterListener extends Thread{
-    public BroadcasterListener(int port,int rmiPort) throws IOException {
+    
+    private int port;
+    public BroadcasterListener(int port) throws IOException {
+        this.port = port ;
         datagramSocket = new DatagramSocket(port);
         datagramSocket.setBroadcast(true);
         datagramSocket.setSoTimeout(30*1000);
@@ -20,11 +23,18 @@ public class BroadcasterListener extends Thread{
     public void run() {
         
         byte[] buf = new byte[256];
+        logger.info("check if a broadcaster is online");
         DatagramPacket p = new DatagramPacket(buf, buf.length);
         try {
             datagramSocket.receive(p);
         }catch(IOException e) {
+            datagramSocket.close();
             logger.info("no message received - starting broadcaster thread");
+            try {
+                new Broadcaster(port).start();
+            } catch (IOException e1) {
+                throw new RuntimeException("unable to start broadcaster thread",e1);
+            }
             return;
         }
         datagramSocket.close();

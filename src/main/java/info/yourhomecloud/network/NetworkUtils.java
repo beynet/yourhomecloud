@@ -60,7 +60,7 @@ public class NetworkUtils {
     }
     
     
-    
+    public static final int DEFAULT_BROADCAST_PORT = 31003;
     
     public final static String BROADCAST_BEGIN = "yourhomecloud=";
 }

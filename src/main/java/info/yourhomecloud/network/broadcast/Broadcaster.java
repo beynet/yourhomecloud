@@ -1,6 +1,7 @@
 package info.yourhomecloud.network.broadcast;
 
 import info.yourhomecloud.network.NetworkUtils;
+import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,11 +13,10 @@ import org.apache.log4j.Logger;
 
 public class Broadcaster extends Thread {
     
-    public Broadcaster(int port,int rmiPort) throws IOException {
+    public Broadcaster(int port) throws IOException {
         this.socket = new DatagramSocket();
         this.socket.setBroadcast(true);
         this.port = port;
-        this.rmiPort = rmiPort;
         this.broadCastAdress = NetworkUtils.getFirstBroadcastAddress();
     }
     
@@ -24,7 +24,7 @@ public class Broadcaster extends Thread {
     public void run() {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         StringBuilder sb = new StringBuilder(NetworkUtils.BROADCAST_BEGIN);
-        sb.append(rmiPort);
+        sb.append(RMIUtils.getRMIUtils().getPort());
         try {
             os.write(sb.toString().getBytes());
         } catch (IOException e) {
@@ -53,7 +53,6 @@ public class Broadcaster extends Thread {
         logger.info("end of thread");
     }
     
-    private int rmiPort;
     private DatagramSocket socket;
     private int port ;
     private InetAddress broadCastAdress ;

@@ -32,7 +32,7 @@ public class FirstTest extends RootTest{
     
     @Test
     public void testBroadcast() throws IOException, InterruptedException {
-        Broadcaster brThread = new Broadcaster(31003, 31004);
+        Broadcaster brThread = new Broadcaster(31003);
         brThread.start();
         DatagramSocket datagramSocket = new DatagramSocket(31003);
         byte[] buf = new byte[256];
@@ -65,7 +65,7 @@ public class FirstTest extends RootTest{
     @Test
     public void testBroadcastListener() throws IOException, InterruptedException, NotBoundException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/beynet/Desktop"));
-        BroadcasterListener list = new BroadcasterListener(31003,31004);
+        BroadcasterListener list = new BroadcasterListener(31003);
         list.start();
         list.join();
         Configuration.getConfiguration().saveLocalFilesToMainHost(new DebugSync());
@@ -74,7 +74,7 @@ public class FirstTest extends RootTest{
     @Test
     public void testBroadcast2() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
-        Broadcaster brThread = new Broadcaster(31003, RMIUtils.getRMIUtils().getPort());
+        Broadcaster brThread = new Broadcaster(NetworkUtils.DEFAULT_BROADCAST_PORT);
         brThread.start();
         brThread.join();
     }
