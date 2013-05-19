@@ -31,8 +31,10 @@ public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  
         if (Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             Path rel = this.source.relativize(file);
             if (!this.targetHost.isFileExistingAndNotModifiedSince(rel,attrs.lastModifiedTime().toMillis())) {
+                this.setChanged();
                 notifyObservers("start of copy :"+file.toString());
                 this.targetHost.copyFile(file,rel);
+                this.setChanged();
                 notifyObservers("end of copy :"+file.toString());
             }
         }
