@@ -1,5 +1,6 @@
 package info.yourhomecloud.configuration;
 
+import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.nio.file.Files;
@@ -89,7 +90,8 @@ public class Configuration {
         List<HostConfigurationBean> hosts = new ArrayList<>();
         hosts.addAll(configuration.getOtherHosts());
         hosts.add(configuration.getLocalhost());
-        List<HostConfigurationBean> updateHosts = RMIUtils.getRemoteFileUtils(hostAddr, rmiPort).updateHosts(hosts);
+        FileUtils remoteFileUtils = RMIUtils.getRemoteFileUtils(hostAddr, rmiPort);
+        List<HostConfigurationBean> updateHosts = remoteFileUtils.updateHosts(hosts);
         updateOtherHostsConfiguration(updateHosts);
     }
 
