@@ -106,7 +106,7 @@ public class Configuration {
     public void saveLocalFilesToMainHost(Observer ... observers) throws RemoteException, IOException, NotBoundException {
         FileSyncerImpl fs = new FileSyncerImpl();
         for (String dir : configuration.getLocalhost().getDirectoriesToBeSaved()) {
-            fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort));
+            fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort),observers);
         }
     }
 
