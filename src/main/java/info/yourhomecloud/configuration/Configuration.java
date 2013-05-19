@@ -137,7 +137,10 @@ public class Configuration {
         configuration.getOtherHosts().clear();
         configuration.getOtherHosts().addAll(currentHostsMap.values());
         saveConfiguration();
-        return configuration.getOtherHosts();
+        List<HostConfigurationBean> results = new ArrayList<>();
+        results.add(configuration.getLocalhost());
+        results.addAll(configuration.getOtherHosts());
+        return results;
     }
 
     /**
