@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Observer;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
@@ -102,7 +103,7 @@ public class Configuration {
         updateOtherHostsConfiguration(updateHosts);
     }
     
-    public void saveLocalFilesToMainHost() throws RemoteException, IOException, NotBoundException {
+    public void saveLocalFilesToMainHost(Observer ... observers) throws RemoteException, IOException, NotBoundException {
         FileSyncerImpl fs = new FileSyncerImpl();
         for (String dir : configuration.getLocalhost().getDirectoriesToBeSaved()) {
             fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort));

@@ -9,10 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
-public class FileSyncerVisitor implements FileVisitor<Path> {
+public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  {
     protected FileSyncerVisitor(Path source,TargetHost targetHost) {
         this.source = source ;
         this.targetHost = targetHost;
@@ -30,7 +31,9 @@ public class FileSyncerVisitor implements FileVisitor<Path> {
         if (Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             Path rel = this.source.relativize(file);
             if (!this.targetHost.isFileExistingAndNotModifiedSince(rel,attrs.lastModifiedTime().toMillis())) {
+                notifyObservers("start of copy :"+file.toString());
                 this.targetHost.copyFile(file,rel);
+                notifyObservers("end of copy :"+file.toString());
             }
         }
         return FileVisitResult.CONTINUE;

@@ -15,7 +15,10 @@ import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
+import org.apache.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -51,13 +54,22 @@ public class FirstTest extends RootTest{
         brThread.join();
     }
     
+    public class DebugSync implements Observer {
+
+        @Override
+        public void update(Observable o, Object arg) {
+            logger.info(arg);
+        }
+        
+    }
+    
     @Test
     public void testBroadcastListener() throws IOException, InterruptedException, NotBoundException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/beynet/Desktop"));
         BroadcasterListener list = new BroadcasterListener(31003,31004);
         list.start();
         list.join();
-        Configuration.getConfiguration().saveLocalFilesToMainHost();
+        Configuration.getConfiguration().saveLocalFilesToMainHost(new DebugSync());
     }
     
     @Test
@@ -68,4 +80,6 @@ public class FirstTest extends RootTest{
         brThread.start();
         brThread.join();
     }
+    
+    private final static Logger logger = Logger.getLogger(FirstTest.class);
 }
