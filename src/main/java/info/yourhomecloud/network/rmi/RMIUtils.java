@@ -23,7 +23,7 @@ public class RMIUtils {
         } catch (Exception e) { rmiPort = -1; }
         try {
             logger.info("Creating rmi rgistry at port "+rmiPort);
-            registry = LocateRegistry.getRegistry(0);
+            registry = LocateRegistry.getRegistry(rmiPort);
             try {
                 if (registry!=null) UnicastRemoteObject.unexportObject(registry,true);
             }catch(Exception e) {
