@@ -131,6 +131,10 @@ public class Configuration {
     public String getCurrentHostKey() {
         return configuration.getLocalhost().getHostKey();
     }
+    
+    public List<String> getDirectoriesToBeSaved() {
+        return configuration.getLocalhost().getDirectoriesToBeSaved();
+    }
 
     /**
      * update host list of host known by current host.
