@@ -22,14 +22,7 @@ import org.apache.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class FirstTest extends RootTest{
-    @Test
-    public void testAdresses() {
-        List<List<InetAddress>> listOfAdressesAndAssociatedBroadcastAdresses = NetworkUtils.getAdresses();
-        for (List<InetAddress> adressAndBroadcastAdress : listOfAdressesAndAssociatedBroadcastAdresses ) {
-            System.out.println("adress = "+adressAndBroadcastAdress.get(0).getHostAddress()+" broadcast "+adressAndBroadcastAdress.get(1).getHostAddress());
-        }
-    }
+public class FirstTest extends RootTest {
     
     @Test
     public void testBroadcast() throws IOException, InterruptedException {

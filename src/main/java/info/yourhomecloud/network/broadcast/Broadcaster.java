@@ -1,5 +1,6 @@
 package info.yourhomecloud.network.broadcast;
 
+import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
@@ -9,28 +10,29 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
 
 public class Broadcaster extends Thread {
-    
+
     public Broadcaster(int port) throws IOException {
         this.socket = new DatagramSocket();
         this.socket.setBroadcast(true);
         this.port = port;
         this.broadCastAdress = NetworkUtils.getBroadcastAddresses();
     }
-    
-    private void sendMessage(byte[] buf,InetAddress broadCastAdress) {
-        logger.debug("sending broadcast packet to "+broadCastAdress.getHostAddress()+" port="+port);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, broadCastAdress, port);
-            try {
-                this.socket.send(packet);
-            } catch (IOException e) {
-                throw new RuntimeException("Error sending to network broadcast packet");
-            }
+
+    private void sendMessage(byte[] buf, InetAddress broadCastAdress) {
+        logger.debug("sending broadcast packet to " + broadCastAdress.getHostAddress() + " port=" + port);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, broadCastAdress, port);
+        try {
+            this.socket.send(packet);
+        } catch (IOException e) {
+            throw new RuntimeException("Error sending to network broadcast packet");
+        }
     }
-    
+
     @Override
     public void run() {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -39,13 +41,17 @@ public class Broadcaster extends Thread {
         try {
             os.write(sb.toString().getBytes());
         } catch (IOException e) {
-            throw new RuntimeException("should not happen on a ByteArrayOutputStream",e);
+            throw new RuntimeException("should not happen on a ByteArrayOutputStream", e);
         }
         byte[] buf = os.toByteArray();
-        while(true) {
-            for (InetAddress add : broadCastAdress) {
-                sendMessage(buf, add);
-            }
+        InetAddress broadcastAddress;
+        try {
+            broadcastAddress = NetworkUtils.getBroadcastAddress(Configuration.getConfiguration().getNetworkInterface());
+        } catch (IOException ex) {
+            throw new RuntimeException("unable to retrieve network address from interface name", ex);
+        }
+        while (true) {
+            sendMessage(buf, broadcastAddress);
             if (this.isInterrupted()) {
                 logger.info("interruption detected");
                 break;
@@ -59,11 +65,8 @@ public class Broadcaster extends Thread {
         }
         logger.info("end of thread");
     }
-    
     private DatagramSocket socket;
-    private int port ;
-    private List<InetAddress> broadCastAdress ;
-    
+    private int port;
+    private List<InetAddress> broadCastAdress;
     private final static Logger logger = Logger.getLogger(Broadcaster.class);
-    
 }

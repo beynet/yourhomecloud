@@ -54,7 +54,9 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
 
         pathSelector.setFileFilter(new PathSelectorFilter());
@@ -122,6 +124,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem2);
 
+        jMenuItem5.setText("configure network");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configureBetwork(evt);
+            }
+        });
+        jMenu1.add(jMenuItem5);
+
         jMenuItem3.setText("Scan Network");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -129,6 +139,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem3);
+
+        jMenuItem4.setText("Start Sync");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startSync(evt);
+            }
+        });
+        jMenu1.add(jMenuItem4);
 
         jMenuItem1.setText("Quit");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -228,6 +246,19 @@ public class MainWindow extends javax.swing.JFrame {
         
     }//GEN-LAST:event_scanNetwork
 
+    private void startSync(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startSync
+        // TODO add your handling code here:
+    }//GEN-LAST:event_startSync
+
+    private void configureBetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBetwork
+        final NetworkConfiguration networkConfiguration = new NetworkConfiguration(this, true);
+        networkConfiguration.setVisible(true);
+        String selected = networkConfiguration.getSelectedInterface();
+        if (selected!=null) {
+            Configuration.getConfiguration().setNetworkInterface(selected);
+        }
+    }//GEN-LAST:event_configureBetwork
+
     /**
      * @param args the command line arguments
      */
@@ -268,6 +299,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel networkPanel;

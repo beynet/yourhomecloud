@@ -52,8 +52,19 @@ public class HostConfigurationBean implements Serializable{
         return directoriesToBeSaved;
     }
     
+    @XmlElement(name="networkInterface")
+    public String getNetworkInterface() {
+        return networkInterface;
+    }
+    public void setNetworkInterface(String networkInterface) {
+        this.networkInterface = networkInterface;
+    }
+    
+    private String networkInterface ;
     private String hostKey ;
     private String hostName;
     private Long   lastUpdateDate = null;
     private List<String> directoriesToBeSaved = new ArrayList<>();
+
+    
 }

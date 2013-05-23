@@ -2,6 +2,7 @@ package info.yourhomecloud.configuration;
 
 import info.yourhomecloud.files.impl.FileSyncerImpl;
 import info.yourhomecloud.hosts.impl.NetworkTargetHost;
+import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
@@ -29,18 +30,23 @@ public class Configuration {
      * @param configDirectory : must be a directory
      */
     private Configuration(Path configDirectory) {
-        this.configDirectory = configDirectory ;
-        if (!Files.exists(configDirectory)) throw new IllegalArgumentException("Directory "+configDirectory+" does not exist");
-        if (!Files.isDirectory(configDirectory)) throw new IllegalArgumentException("File "+configDirectory+" is not a directory");
+        this.configDirectory = configDirectory;
+        if (!Files.exists(configDirectory)) {
+            throw new IllegalArgumentException("Directory " + configDirectory + " does not exist");
+        }
+        if (!Files.isDirectory(configDirectory)) {
+            throw new IllegalArgumentException("File " + configDirectory + " is not a directory");
+        }
         readConfiguration();
     }
-    
+
     public Path getConfigurationPath() {
         return this.configDirectory;
     }
 
     /**
-     * try to read XML configuration file - create a default new file if this file does not exist.
+     * try to read XML configuration file - create a default new file if this
+     * file does not exist.
      */
     private void readConfiguration() {
         Path configFile = this.configDirectory.resolve("yourhomecloud.xml");
@@ -49,7 +55,7 @@ public class Configuration {
             try {
                 unm = context.createUnmarshaller();
             } catch (JAXBException e) {
-                throw new RuntimeException("unable to create an unmarshaller",e);
+                throw new RuntimeException("unable to create an unmarshaller", e);
             }
             try {
                 configuration = (ConfigurationBean) unm.unmarshal(configFile.toFile());
@@ -63,13 +69,18 @@ public class Configuration {
     }
 
     /**
-     * generate a new configuration File - 
+     * generate a new configuration File -
      */
     private void generateNewConfiguration(Path configFile) {
         configuration = new ConfigurationBean();
         HostConfigurationBean localHost = new HostConfigurationBean();
         localHost.setHostKey(UUID.randomUUID().toString());
         localHost.setLastUpdateDate(new Long(System.currentTimeMillis()));
+        try {
+            localHost.setNetworkInterface(NetworkUtils.getFirstInterface().getDisplayName());
+        } catch (IOException e) {
+            throw new RuntimeException("unable to retrieve network interfaces", e);
+        }
         configuration.setLocalhost(localHost);
         saveConfiguration();
     }
@@ -79,14 +90,24 @@ public class Configuration {
         try {
             context.createMarshaller().marshal(configuration, configFile.toFile());
         } catch (JAXBException e) {
-            logger.error("unable to create new configuration file",e);
+            logger.error("unable to create new configuration file", e);
             throw new RuntimeException(e);
         }
+    }
+    
+    public String getNetworkInterface() {
+        return configuration.getLocalhost().getNetworkInterface();
+    }
+    
+    public void setNetworkInterface(String i) {
+        configuration.getLocalhost().setNetworkInterface(i);
+        saveConfiguration();
     }
 
     /**
      * add dir to the list of directories to be backuped
-     * @param dir 
+     *
+     * @param dir
      */
     public void addDirectoryToBeSaved(Path dir) {
         dir = dir.toAbsolutePath().normalize();
@@ -95,10 +116,11 @@ public class Configuration {
             saveConfiguration();
         }
     }
-    
+
     /**
      * remove dir from the list of directories to be backuped
-     * @param dir 
+     *
+     * @param dir
      */
     public void removeDirectoryToBeSaved(Path dir) {
         dir = dir.toAbsolutePath().normalize();
@@ -108,18 +130,19 @@ public class Configuration {
             saveConfiguration();
         }
     }
-    
+
     /**
      * define the main host - sync the known hosts with this main host
+     *
      * @param hostAddr
      * @param rmiPort
      * @throws RemoteException
-     * @throws NotBoundException 
+     * @throws NotBoundException
      */
-    public void setMainHostAndUpdateHostsList(String hostAddr,int rmiPort) throws RemoteException, NotBoundException {
+    public void setMainHostAndUpdateHostsList(String hostAddr, int rmiPort) throws RemoteException, NotBoundException {
         this.mainHostAddr = hostAddr;
         this.mainHostRmiPort = rmiPort;
-        logger.info("register main host "+mainHostAddr+" port = "+this.mainHostRmiPort);
+        logger.info("register main host " + mainHostAddr + " port = " + this.mainHostRmiPort);
         List<HostConfigurationBean> hosts = new ArrayList<>();
         hosts.addAll(configuration.getOtherHosts());
         hosts.add(configuration.getLocalhost());
@@ -127,34 +150,37 @@ public class Configuration {
         List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts);
         updateOtherHostsConfiguration(updateHosts);
     }
+
     /**
      * @return the main host ip or null if current host is the main host
      */
     public String getMainHost() {
         return this.mainHostAddr;
     }
-    
-    public void saveLocalFilesToMainHost(Observer ... observers) throws RemoteException, IOException, NotBoundException {
+
+    public void saveLocalFilesToMainHost(Observer... observers) throws RemoteException, IOException, NotBoundException {
         FileSyncerImpl fs = new FileSyncerImpl();
         for (String dir : configuration.getLocalhost().getDirectoriesToBeSaved()) {
-            fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort),observers);
+            fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort), observers);
         }
     }
 
     /**
-     * @param paths : optional except for the first call to initiate the configuration
+     * @param paths : optional except for the first call to initiate the
+     * configuration
      * @return the configuration singleton
      */
-    public static Configuration getConfiguration(Path...paths) {
+    public static Configuration getConfiguration(Path... paths) {
         synchronized (Configuration.class) {
-            if (_configuration==null) {
-                if (paths.length==0) throw new RuntimeException("Directory where configuration files will be stored must be provide at initialization");
+            if (_configuration == null) {
+                if (paths.length == 0) {
+                    throw new RuntimeException("Directory where configuration files will be stored must be provide at initialization");
+                }
                 _configuration = new Configuration(paths[0]);
             }
         }
         return _configuration;
     }
-
 
     /**
      * @return current host key
@@ -162,31 +188,37 @@ public class Configuration {
     public String getCurrentHostKey() {
         return configuration.getLocalhost().getHostKey();
     }
-    
+
     public List<String> getDirectoriesToBeSaved() {
         return configuration.getLocalhost().getDirectoriesToBeSaved();
     }
 
     /**
      * update host list of host known by current host.
+     *
      * @param update
      * @return
      */
     public List<HostConfigurationBean> updateOtherHostsConfiguration(List<HostConfigurationBean> update) {
-        Map<String, HostConfigurationBean> newHostsMap     = ConfigurationBean.getOtherHostsMap(update);
+        Map<String, HostConfigurationBean> newHostsMap = ConfigurationBean.getOtherHostsMap(update);
         Map<String, HostConfigurationBean> currentHostsMap = ConfigurationBean.getOtherHostsMap(configuration.getOtherHosts());
 
         for (Entry<String, HostConfigurationBean> entry : newHostsMap.entrySet()) {
-            HostConfigurationBean newConf     = entry.getValue();
-            if (configuration.getLocalhost().getHostKey().equals(newConf.getHostKey())) continue;
-            HostConfigurationBean currentConf = currentHostsMap.get(entry.getKey());
-            if (currentConf==null) {
-                currentHostsMap.put(entry.getKey(), newConf);
+            HostConfigurationBean newConf = entry.getValue();
+            if (configuration.getLocalhost().getHostKey().equals(newConf.getHostKey())) {
+                continue;
             }
-            else {
-                if (currentConf.getLastUpdateDate()==null) currentConf.setLastUpdateDate(Long.valueOf(0));
-                if (newConf.getLastUpdateDate()==null) newConf.setLastUpdateDate(Long.valueOf(0));
-                if (currentConf.getLastUpdateDate().compareTo(newConf.getLastUpdateDate())<0 ) {
+            HostConfigurationBean currentConf = currentHostsMap.get(entry.getKey());
+            if (currentConf == null) {
+                currentHostsMap.put(entry.getKey(), newConf);
+            } else {
+                if (currentConf.getLastUpdateDate() == null) {
+                    currentConf.setLastUpdateDate(Long.valueOf(0));
+                }
+                if (newConf.getLastUpdateDate() == null) {
+                    newConf.setLastUpdateDate(Long.valueOf(0));
+                }
+                if (currentConf.getLastUpdateDate().compareTo(newConf.getLastUpdateDate()) < 0) {
                     currentHostsMap.put(entry.getKey(), newConf);
                 }
             }
@@ -210,23 +242,21 @@ public class Configuration {
     protected ConfigurationBean getConfigurationBean() {
         return configuration;
     }
-
     //    public void add
-
     private Path configDirectory;
-    private String mainHostAddr ;
-    private int    mainHostRmiPort;
-    private ConfigurationBean configuration ;
-
+    private String mainHostAddr;
+    private int mainHostRmiPort;
+    private ConfigurationBean configuration;
     // JAXB configuration
     private final static JAXBContext context;
+
     static {
         try {
             context = JAXBContext.newInstance(ConfigurationBean.class);
         } catch (JAXBException e) {
-            throw new RuntimeException("unable to generate jaxb context for configuration",e);
+            throw new RuntimeException("unable to generate jaxb context for configuration", e);
         }
     }
-    private static Configuration _configuration = null ;
+    private static Configuration _configuration = null;
     private static final Logger logger = Logger.getLogger(Configuration.class);
 }
