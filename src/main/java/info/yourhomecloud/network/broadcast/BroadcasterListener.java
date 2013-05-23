@@ -6,17 +6,18 @@ import info.yourhomecloud.network.NetworkUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
-public class BroadcasterListener extends Thread{
+public class BroadcasterListener extends Observable implements Runnable {
     
     private int port;
     public BroadcasterListener(int port) throws IOException {
         this.port = port ;
         datagramSocket = new DatagramSocket(port);
         datagramSocket.setBroadcast(true);
-        datagramSocket.setSoTimeout(30*1000);
+        datagramSocket.setSoTimeout(10*1000);
     }
     
     @Override
@@ -35,6 +36,8 @@ public class BroadcasterListener extends Thread{
             } catch (IOException e1) {
                 throw new RuntimeException("unable to start broadcaster thread",e1);
             }
+            this.setChanged();
+            this.notifyObservers();
             return;
         }
         datagramSocket.close();
@@ -42,7 +45,9 @@ public class BroadcasterListener extends Thread{
         logger.info("host from which broadcast was received "+p.getAddress().getHostAddress());
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         try {
-            Configuration.getConfiguration().setMainHost(p.getAddress().getHostAddress(), Integer.valueOf(port).intValue());
+            Configuration.getConfiguration().setMainHostAndUpdateHostsList(p.getAddress().getHostAddress(), Integer.valueOf(port).intValue());
+            this.setChanged();
+            this.notifyObservers();
         } catch (Exception e) {
             logger.error("error updating main host",e);
         }

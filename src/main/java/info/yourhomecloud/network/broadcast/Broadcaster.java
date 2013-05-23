@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +18,17 @@ public class Broadcaster extends Thread {
         this.socket = new DatagramSocket();
         this.socket.setBroadcast(true);
         this.port = port;
-        this.broadCastAdress = NetworkUtils.getFirstBroadcastAddress();
+        this.broadCastAdress = NetworkUtils.getBroadcastAddresses();
+    }
+    
+    private void sendMessage(byte[] buf,InetAddress broadCastAdress) {
+        logger.debug("sending broadcast packet to "+broadCastAdress.getHostAddress()+" port="+port);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, broadCastAdress, port);
+            try {
+                this.socket.send(packet);
+            } catch (IOException e) {
+                throw new RuntimeException("Error sending to network broadcast packet");
+            }
     }
     
     @Override
@@ -32,12 +43,8 @@ public class Broadcaster extends Thread {
         }
         byte[] buf = os.toByteArray();
         while(true) {
-            logger.debug("sending broadcast packet to "+broadCastAdress.getHostAddress()+" port="+port);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, broadCastAdress, port);
-            try {
-                this.socket.send(packet);
-            } catch (IOException e) {
-                throw new RuntimeException("Error sending to network broadcast packet");
+            for (InetAddress add : broadCastAdress) {
+                sendMessage(buf, add);
             }
             if (this.isInterrupted()) {
                 logger.info("interruption detected");
@@ -55,7 +62,7 @@ public class Broadcaster extends Thread {
     
     private DatagramSocket socket;
     private int port ;
-    private InetAddress broadCastAdress ;
+    private List<InetAddress> broadCastAdress ;
     
     private final static Logger logger = Logger.getLogger(Broadcaster.class);
     

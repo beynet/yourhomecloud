@@ -53,6 +53,17 @@ public class NetworkUtils {
         return adresses.get(0).get(1);
     }
     
+    public static List<InetAddress> getBroadcastAddresses() throws IOException {
+        List<InetAddress> result = new ArrayList<>();
+        List<List<InetAddress>> adresses = NetworkUtils.getAdresses();
+        if (adresses==null || adresses.size()==0) throw new IOException("unable to list current computer network interfaces");
+        for (List<InetAddress> l : adresses) {
+            result.add(l.get(1));
+        }
+        return result;
+    }
+    
+    
     public static InetAddress getFirstAddress() throws IOException {
         List<List<InetAddress>> adresses = NetworkUtils.getAdresses();
         if (adresses==null || adresses.size()==0) throw new IOException("unable to list current computer network interfaces");

@@ -6,9 +6,21 @@ package info.yourhomecloud.gui;
 
 import info.yourhomecloud.YourHomeCloud;
 import info.yourhomecloud.configuration.Configuration;
+import info.yourhomecloud.network.NetworkUtils;
+import info.yourhomecloud.network.broadcast.BroadcasterListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -33,22 +45,72 @@ public class MainWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         pathSelector = new javax.swing.JFileChooser();
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         pathsToBeSaved = new javax.swing.JList();
-        jLabel1 = new javax.swing.JLabel();
+        networkPanel = new javax.swing.JPanel();
+        networkStatusScroll = new javax.swing.JScrollPane();
+        networkStatus = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
 
         pathSelector.setFileFilter(new PathSelectorFilter());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Directories backuped"));
+
         pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
+        pathsToBeSaved.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                onKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(pathsToBeSaved);
 
-        jLabel1.setText("Directories currently backuped");
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 479, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 181, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        networkPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Network Status"));
+
+        networkStatus.setEditable(false);
+        networkStatus.setColumns(20);
+        networkStatus.setRows(5);
+        networkStatusScroll.setViewportView(networkStatus);
+
+        org.jdesktop.layout.GroupLayout networkPanelLayout = new org.jdesktop.layout.GroupLayout(networkPanel);
+        networkPanel.setLayout(networkPanelLayout);
+        networkPanelLayout.setHorizontalGroup(
+            networkPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(networkPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(networkStatusScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 472, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(16, Short.MAX_VALUE))
+        );
+        networkPanelLayout.setVerticalGroup(
+            networkPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(networkPanelLayout.createSequentialGroup()
+                .add(14, 14, 14)
+                .add(networkStatusScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(36, Short.MAX_VALUE))
+        );
 
         jMenu1.setText("YourHomeCloud");
 
@@ -59,6 +121,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem2);
+
+        jMenuItem3.setText("Scan Network");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scanNetwork(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
 
         jMenuItem1.setText("Quit");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -77,20 +147,20 @@ public class MainWindow extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(37, 37, 37)
+                .add(29, 29, 29)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 186, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(331, Short.MAX_VALUE))
+                    .add(networkPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(48, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(16, 16, 16)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(242, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(24, 24, 24)
+                .add(networkPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
@@ -111,6 +181,52 @@ public class MainWindow extends javax.swing.JFrame {
             System.out.println("File access cancelled by user.");
         }
     }//GEN-LAST:event_showPathsToBeStored
+
+    private void onKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_onKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+            int selectedIndex = pathsToBeSaved.getSelectedIndex();
+            if (selectedIndex != -1) {
+                String path = (String)pathsToBeSaved.getModel().getElementAt(selectedIndex);
+                Path toBeRemoved = Paths.get(path);
+                Configuration.getConfiguration().removeDirectoryToBeSaved(toBeRemoved);
+                pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
+            }
+        }
+    }//GEN-LAST:event_onKeyPressed
+
+    private void scanNetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetwork
+        final Observer observer = new Observer() {
+                JTextArea text = networkStatus;
+                @Override
+                public void update(Observable o, Object arg) {
+                    final String networkStatus ;
+                    if (Configuration.getConfiguration().getMainHost()==null) {
+                        networkStatus = "Current instance is the master instance";
+                    }
+                    else {
+                        networkStatus = "Master host ip="+Configuration.getConfiguration().getMainHost();
+                    }
+                    /* Create and display the form */
+                    java.awt.EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            text.setText(networkStatus);
+                        }
+                    });
+                }
+                
+            };
+        try {
+            
+            final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
+            broadcasterListener.addObserver(observer);
+            final Thread thread = new Thread(broadcasterListener);
+            thread.start();
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Unable to start broadcast listener");
+        }
+        
+    }//GEN-LAST:event_scanNetwork
 
     /**
      * @param args the command line arguments
@@ -147,12 +263,16 @@ public class MainWindow extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel networkPanel;
+    private javax.swing.JTextArea networkStatus;
+    private javax.swing.JScrollPane networkStatusScroll;
     private javax.swing.JFileChooser pathSelector;
     private javax.swing.JList pathsToBeSaved;
     // End of variables declaration//GEN-END:variables

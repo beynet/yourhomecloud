@@ -19,6 +19,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class FirstTest extends RootTest{
@@ -48,7 +49,7 @@ public class FirstTest extends RootTest{
        
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         System.out.println("port read = "+port);
-        assertThat(port, is("31004"));
+        assertThat(port, is(Integer.toString(RMIUtils.getRMIUtils().getPort())));
         brThread.interrupt();
         brThread.join();
     }
@@ -63,15 +64,17 @@ public class FirstTest extends RootTest{
     }
     
     @Test
+    @Ignore
     public void testBroadcastListener() throws IOException, InterruptedException, NotBoundException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/beynet/Desktop"));
-        BroadcasterListener list = new BroadcasterListener(31003);
+        Thread list = new Thread(new BroadcasterListener(31003));
         list.start();
         list.join();
         Configuration.getConfiguration().saveLocalFilesToMainHost(new DebugSync());
     }
     
     @Test
+    @Ignore
     public void testBroadcast2() throws IOException, InterruptedException {
         Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
         Broadcaster brThread = new Broadcaster(NetworkUtils.DEFAULT_BROADCAST_PORT);

@@ -22,7 +22,7 @@ public class RMIUtils {
         try {
             InetAddress firstAddress = NetworkUtils.getFirstAddress();
             this.address = firstAddress.getHostAddress();
-            System.setProperty("java.rmi.server.hostname", this.address);
+            System.setProperty("java.rmi.server.hostname", java.net.InetAddress.getLocalHost().getHostName());
             ServerSocket socket= new ServerSocket(0);
             rmiPort = socket.getLocalPort();
             socket.close(); 

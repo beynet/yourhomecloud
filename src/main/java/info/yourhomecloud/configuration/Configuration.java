@@ -84,14 +84,39 @@ public class Configuration {
         }
     }
 
+    /**
+     * add dir to the list of directories to be backuped
+     * @param dir 
+     */
     public void addDirectoryToBeSaved(Path dir) {
+        dir = dir.toAbsolutePath().normalize();
         if (!configuration.getLocalhost().getDirectoriesToBeSaved().contains(dir.toString())) {
             configuration.getLocalhost().getDirectoriesToBeSaved().add(dir.toString());
             saveConfiguration();
         }
     }
-
-    public void setMainHost(String hostAddr,int rmiPort) throws RemoteException, NotBoundException {
+    
+    /**
+     * remove dir from the list of directories to be backuped
+     * @param dir 
+     */
+    public void removeDirectoryToBeSaved(Path dir) {
+        dir = dir.toAbsolutePath().normalize();
+        String toString = dir.toString();
+        if (configuration.getLocalhost().getDirectoriesToBeSaved().contains(toString)) {
+            configuration.getLocalhost().getDirectoriesToBeSaved().remove(toString);
+            saveConfiguration();
+        }
+    }
+    
+    /**
+     * define the main host - sync the known hosts with this main host
+     * @param hostAddr
+     * @param rmiPort
+     * @throws RemoteException
+     * @throws NotBoundException 
+     */
+    public void setMainHostAndUpdateHostsList(String hostAddr,int rmiPort) throws RemoteException, NotBoundException {
         this.mainHostAddr = hostAddr;
         this.mainHostRmiPort = rmiPort;
         logger.info("register main host "+mainHostAddr+" port = "+this.mainHostRmiPort);
@@ -101,6 +126,12 @@ public class Configuration {
         info.yourhomecloud.network.rmi.Configuration remoteConfiguration = RMIUtils.getRemoteConfiguration(hostAddr, rmiPort);
         List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts);
         updateOtherHostsConfiguration(updateHosts);
+    }
+    /**
+     * @return the main host ip or null if current host is the main host
+     */
+    public String getMainHost() {
+        return this.mainHostAddr;
     }
     
     public void saveLocalFilesToMainHost(Observer ... observers) throws RemoteException, IOException, NotBoundException {

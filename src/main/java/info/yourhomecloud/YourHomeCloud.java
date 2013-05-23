@@ -2,10 +2,6 @@ package info.yourhomecloud;
 
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.gui.MainWindow;
-import info.yourhomecloud.network.NetworkUtils;
-import info.yourhomecloud.network.broadcast.BroadcasterListener;
-
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
