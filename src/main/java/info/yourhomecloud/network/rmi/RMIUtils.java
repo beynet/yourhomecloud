@@ -20,13 +20,17 @@ public class RMIUtils {
 
     private RMIUtils() {
         try {
-            InetAddress firstAddress = NetworkUtils.getFirstAddress();
-            this.address = firstAddress.getHostAddress();
-            System.setProperty("java.rmi.server.hostname", java.net.InetAddress.getLocalHost().getHostName());
+            InetAddress address = NetworkUtils.getAddress(info.yourhomecloud.configuration.Configuration.getConfiguration().getNetworkInterface());
+            this.address = address.getHostAddress();
+            info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentAddressRMI(this.address);
+            System.setProperty("java.rmi.server.hostname", address.getHostAddress());
             ServerSocket socket= new ServerSocket(0);
             rmiPort = socket.getLocalPort();
+            info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentPortRMI(this.rmiPort);
             socket.close(); 
-        } catch (Exception e) { rmiPort = -1; }
+        } catch (Exception e) { 
+            throw new RuntimeException("error constructing rmi server",e) ;
+        }
         try {
             logger.info("Creating rmi registry at port "+rmiPort);
             registry = LocateRegistry.getRegistry(rmiPort);
@@ -70,9 +74,16 @@ public class RMIUtils {
     }
     
     public static RMIUtils getRMIUtils() {
+        if (_rmiUtils==null) {
+            synchronized (RMIUtils.class) {
+                if (_rmiUtils==null) {
+                    _rmiUtils = new RMIUtils();
+                }
+            }
+        }
         return _rmiUtils;
     }
 
     private final static Logger logger = Logger.getLogger(RMIUtils.class);
-    private final static RMIUtils _rmiUtils = new RMIUtils();
+    private  static RMIUtils _rmiUtils = null;
 }

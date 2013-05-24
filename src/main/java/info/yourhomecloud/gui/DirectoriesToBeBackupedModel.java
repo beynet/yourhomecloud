@@ -5,14 +5,13 @@
 package info.yourhomecloud.gui;
 
 import info.yourhomecloud.configuration.Configuration;
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 
 /**
  *
  * @author beynet
  */
-public class DirectoriesToBeBackupedModel extends AbstractListModel<String> {
+public class DirectoriesToBeBackupedModel extends DefaultListModel<String> {
      
     public DirectoriesToBeBackupedModel() {
         

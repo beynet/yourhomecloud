@@ -2,15 +2,15 @@ package info.yourhomecloud.network.broadcast;
 
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.Observable;
-
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
-public class BroadcasterListener extends Observable implements Runnable {
+public class BroadcasterListener implements Runnable {
 
     private int port;
 
@@ -34,11 +34,14 @@ public class BroadcasterListener extends Observable implements Runnable {
             logger.info("no message received - starting broadcaster thread");
             try {
                 new Broadcaster(port).start();
+                try {
+                    Configuration.getConfiguration().setMainHostAndUpdateHostsList(null,0);
+                } catch (Exception ex) {
+                    throw new RuntimeException("programatic error detected - no exception should be thrown here",ex);
+                } 
             } catch (IOException e1) {
                 throw new RuntimeException("unable to start broadcaster thread", e1);
             }
-            this.setChanged();
-            this.notifyObservers();
             return;
         }
         datagramSocket.close();
@@ -47,8 +50,6 @@ public class BroadcasterListener extends Observable implements Runnable {
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         try {
             Configuration.getConfiguration().setMainHostAndUpdateHostsList(p.getAddress().getHostAddress(), Integer.valueOf(port).intValue());
-            this.setChanged();
-            this.notifyObservers();
         } catch (Exception e) {
             logger.error("error updating main host", e);
         }

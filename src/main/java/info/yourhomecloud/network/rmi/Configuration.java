@@ -14,5 +14,8 @@ public interface Configuration extends Remote {
      * @return current host configuration including its own configuration
      * @throws RemoteException
      */
-    public List<HostConfigurationBean> updateHosts(List<HostConfigurationBean> hosts) throws RemoteException;
+    public List<HostConfigurationBean> updateHosts(List<HostConfigurationBean> hosts, HostConfigurationBean newHost) throws RemoteException;
+    
+    
+    public void onExit(String hostKey) throws RemoteException;
 }

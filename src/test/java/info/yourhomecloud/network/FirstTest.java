@@ -25,6 +25,11 @@ import org.junit.Test;
 public class FirstTest extends RootTest {
     
     @Test
+    public void addr() {
+        NetworkUtils.getAdresses();
+    }
+    
+    @Test
     public void testBroadcast() throws IOException, InterruptedException {
         Broadcaster brThread = new Broadcaster(31003);
         brThread.start();

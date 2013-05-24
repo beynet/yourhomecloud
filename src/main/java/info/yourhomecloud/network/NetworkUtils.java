@@ -16,7 +16,7 @@ public class NetworkUtils {
      * @return a list of adress current computer is binded with their associated
      * broadcast adresses
      */
-    private static List<List<InetAddress>> getAdresses() {
+    public static List<List<InetAddress>> getAdresses() {
         List<List<InetAddress>> adresses = new ArrayList<List<InetAddress>>();
         Enumeration<NetworkInterface> list;
         try {
@@ -97,9 +97,9 @@ public class NetworkUtils {
         return result;
     }
 
-    public static InetAddress getBroadcastAddress(String interfaceName) throws IOException {
+    private static List<InetAddress> getAddressAndBroadcastAddress(String interfaceName) throws IOException {
         NetworkInterface aInterface = getInterface(interfaceName);
-        InetAddress result = null;
+        List<InetAddress> result = null;
         if (aInterface == null) {
             return null;
         }
@@ -111,33 +111,29 @@ public class NetworkUtils {
                 continue;
             }
             InetAddress broadcast = interfaceAddress.getBroadcast();
-            if (broadcast!=null) {
-                result = broadcast;
+            InetAddress address = interfaceAddress.getAddress();
+            
+            if (broadcast!=null && address!=null) {
+                result = new ArrayList<>();
+                result.add(address);
+                result.add(broadcast);
                 break;
             }
         }
         return result;
     }
+    
+    public static InetAddress getBroadcastAddress(String interfaceName) throws IOException {
+        InetAddress result = null;
+        List<InetAddress> res = getAddressAndBroadcastAddress(interfaceName);
+        if (res!=null) result = res.get(1);
+        return result;
+    }
 
     public static InetAddress getAddress(String interfaceName) throws IOException {
-         NetworkInterface aInterface = getInterface(interfaceName);
         InetAddress result = null;
-        if (aInterface == null) {
-            return null;
-        }
-        Iterator<InterfaceAddress> it = aInterface.getInterfaceAddresses().iterator();
-        while (it.hasNext()) {
-            InterfaceAddress interfaceAddress = it.next();
-
-            if (interfaceAddress == null) {
-                continue;
-            }
-            InetAddress add = interfaceAddress.getAddress();
-            if (add!=null) {
-                result = add;
-                break;
-            }
-        }
+        List<InetAddress> res = getAddressAndBroadcastAddress(interfaceName);
+        if (res!=null) result = res.get(0);
         return result;
     }
 

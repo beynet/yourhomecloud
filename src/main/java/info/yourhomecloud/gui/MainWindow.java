@@ -9,15 +9,14 @@ import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
 import java.awt.event.KeyEvent;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JDialog;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -28,11 +27,62 @@ import javax.swing.JTextArea;
  */
 public class MainWindow extends javax.swing.JFrame {
 
+    private String mainHost;
+
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
         initComponents();
+        Configuration.getConfiguration().addObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                configurationChanged((Configuration) o, (Configuration.Change) arg);
+            }
+        });
+    }
+
+    protected void configurationChanged(Configuration conf, Configuration.Change change) {
+        if (Configuration.Change.MAIN_HOST.equals(change)) {
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ((NetworkStatus)networkStatus).updateMainHost();
+                    ((NetworkStatus)networkStatus).generateText();
+                }
+            });
+        }
+        else if (Configuration.Change.NETWORK_INTERFACE.equals(change)) {
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ((NetworkStatus)networkStatus).updateInterface();
+                    ((NetworkStatus)networkStatus).generateText();
+                }
+            });
+        }
+        else if (Configuration.Change.OTHER_HOSTS.equals(change)) {
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ((NetworkStatus)networkStatus).updateOtherHosts();
+                    ((NetworkStatus)networkStatus).generateText();
+                }
+            });
+        }
+        else if (Configuration.Change.DIRECTORIES_TO_BE_SAVED.equals(change)) {
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
+                }
+            });
+            
+        }
     }
 
     /**
@@ -50,7 +100,7 @@ public class MainWindow extends javax.swing.JFrame {
         pathsToBeSaved = new javax.swing.JList();
         networkPanel = new javax.swing.JPanel();
         networkStatusScroll = new javax.swing.JScrollPane();
-        networkStatus = new javax.swing.JTextArea();
+        networkStatus = new NetworkStatus();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -68,7 +118,7 @@ public class MainWindow extends javax.swing.JFrame {
         pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
         pathsToBeSaved.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                onKeyPressed(evt);
+                removeDirectoryBackupedHandler(evt);
             }
         });
         jScrollPane1.setViewportView(pathsToBeSaved);
@@ -119,7 +169,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem2.setText("configure backup");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showPathsToBeStored(evt);
+                selectDirectoryToBeBackuped(evt);
             }
         });
         jMenu1.add(jMenuItem2);
@@ -127,7 +177,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem5.setText("configure network");
         jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configureBetwork(evt);
+                configureNetwork(evt);
             }
         });
         jMenu1.add(jMenuItem5);
@@ -188,76 +238,51 @@ public class MainWindow extends javax.swing.JFrame {
         YourHomeCloud.quitApplication();
     }//GEN-LAST:event_quitApplication
 
-    private void showPathsToBeStored(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showPathsToBeStored
+    private void selectDirectoryToBeBackuped(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectDirectoryToBeBackuped
         pathSelector.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnVal = pathSelector.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = pathSelector.getSelectedFile();
             Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get(file.getPath()));
-            pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
         } else {
             System.out.println("File access cancelled by user.");
         }
-    }//GEN-LAST:event_showPathsToBeStored
+    }//GEN-LAST:event_selectDirectoryToBeBackuped
 
-    private void onKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_onKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+    private void removeDirectoryBackupedHandler(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_removeDirectoryBackupedHandler
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE || evt.getKeyChar() == KeyEvent.VK_BACK_SPACE) {
             int selectedIndex = pathsToBeSaved.getSelectedIndex();
             if (selectedIndex != -1) {
-                String path = (String)pathsToBeSaved.getModel().getElementAt(selectedIndex);
+                String path = (String) pathsToBeSaved.getModel().getElementAt(selectedIndex);
                 Path toBeRemoved = Paths.get(path);
                 Configuration.getConfiguration().removeDirectoryToBeSaved(toBeRemoved);
-                pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
             }
         }
-    }//GEN-LAST:event_onKeyPressed
+    }//GEN-LAST:event_removeDirectoryBackupedHandler
 
     private void scanNetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetwork
-        final Observer observer = new Observer() {
-                JTextArea text = networkStatus;
-                @Override
-                public void update(Observable o, Object arg) {
-                    final String networkStatus ;
-                    if (Configuration.getConfiguration().getMainHost()==null) {
-                        networkStatus = "Current instance is the master instance";
-                    }
-                    else {
-                        networkStatus = "Master host ip="+Configuration.getConfiguration().getMainHost();
-                    }
-                    /* Create and display the form */
-                    java.awt.EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            text.setText(networkStatus);
-                        }
-                    });
-                }
-                
-            };
         try {
-            
             final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
-            broadcasterListener.addObserver(observer);
             final Thread thread = new Thread(broadcasterListener);
             thread.start();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Unable to start broadcast listener");
         }
-        
+
     }//GEN-LAST:event_scanNetwork
 
     private void startSync(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startSync
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event_startSync
 
-    private void configureBetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBetwork
+    private void configureNetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureNetwork
         final NetworkConfiguration networkConfiguration = new NetworkConfiguration(this, true);
         networkConfiguration.setVisible(true);
         String selected = networkConfiguration.getSelectedInterface();
-        if (selected!=null) {
+        if (selected != null) {
             Configuration.getConfiguration().setNetworkInterface(selected);
         }
-    }//GEN-LAST:event_configureBetwork
+    }//GEN-LAST:event_configureNetwork
 
     /**
      * @param args the command line arguments

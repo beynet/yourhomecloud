@@ -3,15 +3,12 @@ package info.yourhomecloud.network.broadcast;
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.logging.Level;
-
 import org.apache.log4j.Logger;
 
 public class Broadcaster extends Thread {
