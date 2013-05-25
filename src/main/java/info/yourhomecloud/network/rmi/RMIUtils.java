@@ -22,11 +22,11 @@ public class RMIUtils {
         try {
             InetAddress address = NetworkUtils.getAddress(info.yourhomecloud.configuration.Configuration.getConfiguration().getNetworkInterface());
             this.address = address.getHostAddress();
-            info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentAddressRMI(this.address);
+            info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentRMIAddress(this.address);
             System.setProperty("java.rmi.server.hostname", address.getHostAddress());
             ServerSocket socket= new ServerSocket(0);
             rmiPort = socket.getLocalPort();
-            info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentPortRMI(this.rmiPort);
+            info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentRMIPort(this.rmiPort);
             socket.close(); 
         } catch (Exception e) { 
             throw new RuntimeException("error constructing rmi server",e) ;

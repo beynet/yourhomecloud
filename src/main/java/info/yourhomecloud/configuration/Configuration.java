@@ -42,15 +42,23 @@ public class Configuration extends Observable {
         }
         readConfiguration();
     }
-
+    /**
+     * @return the path of the directory where the configuration file
+     * will be stored and the backups from the other hosts.
+     */
     public Path getConfigurationPath() {
         return this.configDirectory;
     }
-    
+    /**
+     * declare current host as the main host
+     */
     public void setMainHost( ) {
         mainHost = true;
     } 
     
+    /**
+     * @return true if current host is the main host
+     */
     public boolean isMainHost() {
         return mainHost;
     }
@@ -175,6 +183,11 @@ public class Configuration extends Observable {
         updateOtherHostsConfiguration(updateHosts, configuration.getLocalhost());
     }
 
+    /**
+     * method called before current exiting.
+     * @throws RemoteException
+     * @throws NotBoundException 
+     */
     public void onExit() throws RemoteException, NotBoundException {
         if (this.mainHostAddr != null) {
             info.yourhomecloud.network.rmi.Configuration remoteConfiguration = RMIUtils.getRemoteConfiguration(this.mainHostAddr, this.mainHostRmiPort);
@@ -191,14 +204,7 @@ public class Configuration extends Observable {
     public String getMainHost() {
         return this.mainHostAddr;
     }
-
-    public void saveLocalFilesToMainHost(Observer... observers) throws RemoteException, IOException, NotBoundException {
-        FileSyncerImpl fs = new FileSyncerImpl();
-        for (String dir : configuration.getLocalhost().getDirectoriesToBeSaved()) {
-            fs.sync(Paths.get(dir), new NetworkTargetHost(this.mainHostAddr, this.mainHostRmiPort), observers);
-        }
-    }
-
+    
     /**
      * @param paths : optional except for the first call to initiate the
      * configuration
@@ -225,6 +231,16 @@ public class Configuration extends Observable {
      */
     public String getCurrentHostKey() {
         return configuration.getLocalhost().getHostKey();
+    }
+    
+    public String getCurrentHostName() {
+        return configuration.getLocalhost().getHostName();
+    }
+    
+    public void setCurrentHostName(String name) {
+        configuration.getLocalhost().setHostName(name);
+        configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
+        saveConfiguration(Change.HOSTNAME);
     }
 
     public List<String> getDirectoriesToBeSaved() {
@@ -257,9 +273,9 @@ public class Configuration extends Observable {
                     newConf.setLastUpdateDate(Long.valueOf(0));
                 }
                 if (currentConf.getLastUpdateDate().compareTo(newConf.getLastUpdateDate()) == 0) {
-                    if (currentConf.getCurrentAddress() == null) {
-                        currentConf.setCurrentAddress(newConf.getCurrentAddress());
-                        currentConf.setCurrentRmiPort(newConf.getCurrentRmiPort());
+                    if (currentConf.getCurrentRMIAddress() == null) {
+                        currentConf.setCurrentRMIAddress(newConf.getCurrentRMIAddress());
+                        currentConf.setCurrentRMIPort(newConf.getCurrentRMIPort());
                     }
                 }
                 if (currentConf.getLastUpdateDate().compareTo(newConf.getLastUpdateDate()) < 0) {
@@ -278,10 +294,10 @@ public class Configuration extends Observable {
             // notify other hosts
             for (HostConfigurationBean bean : configuration.getOtherHosts()) {
                 if (!newHost.getHostKey().equals(bean.getHostKey())) {
-                    if (bean.getCurrentAddress() != null) {
+                    if (bean.getCurrentRMIAddress() != null) {
                         info.yourhomecloud.network.rmi.Configuration remoteConfiguration;
                         try {
-                            remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentAddress(), bean.getCurrentRmiPort());
+                            remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
                             remoteConfiguration.updateHosts(results, newHost);
                         } catch (Exception ex) {
                             logger.error("unable to send update to host", ex);
@@ -322,38 +338,45 @@ public class Configuration extends Observable {
     private static Configuration _configuration = null;
     private static final Logger logger = Logger.getLogger(Configuration.class);
 
-    public void setCurrentAddressRMI(String address) {
-        configuration.getLocalhost().setCurrentAddress(address);
+    public void setCurrentRMIAddress(String address) {
+        configuration.getLocalhost().setCurrentRMIAddress(address);
         configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
     }
 
-    public void setCurrentPortRMI(int rmiPort) {
-        configuration.getLocalhost().setCurrentRmiPort(rmiPort);
+    public void setCurrentRMIPort(int rmiPort) {
+        configuration.getLocalhost().setCurrentRMIPort(rmiPort);
         configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
     }
 
+    /**
+     * update configuration to reflect that host with provided key is no more
+     * connected.
+     * @param hostKey 
+     */
     public void onExit(String hostKey) {
 
         for (HostConfigurationBean bean : configuration.getOtherHosts()) {
             if (hostKey.equals(bean.getHostKey())) {
-                bean.setCurrentAddress(null);
-                this.setChanged();
-                this.notifyObservers(Change.OTHER_HOSTS);
+                bean.setCurrentRMIAddress(null);
+                saveConfiguration(Change.OTHER_HOSTS);
                 break;
             }
         }
+        // exit if current host is not the main host
+        // -----------------------------------------
         if (isMainHost() !=true) {
             return;
         }
-        // notify other hosts
+        // we notify other hosts if we are the main host
+        // ---------------------------------------------
         for (HostConfigurationBean bean : configuration.getOtherHosts()) {
             if (!hostKey.equals(bean.getHostKey())) {
-                if (bean.getCurrentAddress() != null) {
+                if (bean.getCurrentRMIAddress() != null) {
                     info.yourhomecloud.network.rmi.Configuration remoteConfiguration;
                     try {
-                        remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentAddress(), bean.getCurrentRmiPort());
+                        remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
                         remoteConfiguration.onExit(hostKey);
-                    } catch (Exception ex) {
+                    } catch (RemoteException | NotBoundException ex) {
                         logger.error("unable to send update to host", ex);
                     }
                 }
@@ -367,6 +390,6 @@ public class Configuration extends Observable {
         NETWORK_INTERFACE,
         MAIN_HOST,
         DIRECTORIES_TO_BE_SAVED,
-        OTHER_HOSTS,
+        OTHER_HOSTS, HOSTNAME,
     }
 }

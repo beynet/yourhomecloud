@@ -11,6 +11,14 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="HostConfigurationType")
 public class HostConfigurationBean implements Serializable{
+
+    @Override
+    public String toString() {
+        return "name="+getHostName()+" key="+getHostKey();
+    }
+    
+    
+    
     
     /**
      * 
@@ -63,23 +71,23 @@ public class HostConfigurationBean implements Serializable{
     
     
     @XmlTransient
-    public String getCurrentAddress() {
-        return currentAddress;
+    public String getCurrentRMIAddress() {
+        return currentRMIAddress;
     }
-    public void setCurrentAddress(String currentAddress) {
-        this.currentAddress = currentAddress;
+    public void setCurrentRMIAddress(String currentAddress) {
+        this.currentRMIAddress = currentAddress;
     }
     
     @XmlTransient
-    public int getCurrentRmiPort() {
-        return currentRmiPort;
+    public int getCurrentRMIPort() {
+        return currentRMIPort;
     }
-    public void setCurrentRmiPort(int currentRmiPort) {
-        this.currentRmiPort = currentRmiPort;
+    public void setCurrentRMIPort(int currentRmiPort) {
+        this.currentRMIPort = currentRmiPort;
     }
     
-    private String currentAddress;
-    private int currentRmiPort ;
+    private String currentRMIAddress;
+    private int currentRMIPort ;
     private String networkInterface ;
     private String hostKey ;
     private String hostName;

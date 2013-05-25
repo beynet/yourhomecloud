@@ -56,7 +56,6 @@ public class YourHomeCloud {
         } catch (Exception ex) {
             logger.error("unable to send exit",ex);
         }
-        System.exit(0);
     }
     
     private final static Logger logger = Logger.getLogger(YourHomeCloud.class);

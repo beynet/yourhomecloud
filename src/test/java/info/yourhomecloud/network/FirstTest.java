@@ -61,24 +61,6 @@ public class FirstTest extends RootTest {
         
     }
     
-    @Test
-    @Ignore
-    public void testBroadcastListener() throws IOException, InterruptedException, NotBoundException {
-        Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/beynet/Desktop"));
-        Thread list = new Thread(new BroadcasterListener(31003));
-        list.start();
-        list.join();
-        Configuration.getConfiguration().saveLocalFilesToMainHost(new DebugSync());
-    }
-    
-    @Test
-    @Ignore
-    public void testBroadcast2() throws IOException, InterruptedException {
-        Configuration.getConfiguration().addDirectoryToBeSaved(Paths.get("/Users/tata"));
-        Broadcaster brThread = new Broadcaster(NetworkUtils.DEFAULT_BROADCAST_PORT);
-        brThread.start();
-        brThread.join();
-    }
     
     private final static Logger logger = Logger.getLogger(FirstTest.class);
 }

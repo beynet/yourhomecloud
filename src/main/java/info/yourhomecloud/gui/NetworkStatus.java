@@ -40,8 +40,12 @@ public final class NetworkStatus extends JTextArea {
         otherHostsLine = "Connected hosts :\n";
         if (Configuration.getConfiguration().getOtherHosts() != null) {
             for (HostConfigurationBean host : Configuration.getConfiguration().getOtherHosts()) {
-                if (host.getCurrentAddress() != null) {
-                    otherHostsLine = otherHostsLine.concat("\t" + host.getCurrentAddress() + " " + host.getCurrentRmiPort()+"\n");
+                if (host.getCurrentRMIAddress() != null) {
+                    otherHostsLine = otherHostsLine.concat("\t");
+                    if (host.getHostName()!=null) {
+                        otherHostsLine = otherHostsLine.concat(host.getHostName()+ " ");
+                    }
+                    otherHostsLine = otherHostsLine.concat(host.getCurrentRMIAddress()) + " " + host.getCurrentRMIPort()+"\n";
                 }
             }
         }

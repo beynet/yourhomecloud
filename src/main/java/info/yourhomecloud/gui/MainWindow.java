@@ -6,20 +6,26 @@ package info.yourhomecloud.gui;
 
 import info.yourhomecloud.YourHomeCloud;
 import info.yourhomecloud.configuration.Configuration;
+import info.yourhomecloud.configuration.HostConfigurationBean;
+import info.yourhomecloud.files.impl.FileSyncerImpl;
+import info.yourhomecloud.hosts.impl.NetworkTargetHost;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
+import info.yourhomecloud.network.rmi.RMIUtils;
+import java.awt.Frame;
 import java.awt.event.KeyEvent;
-
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
-import javax.swing.DefaultListModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
 
 /**
  *
@@ -50,6 +56,15 @@ public class MainWindow extends javax.swing.JFrame {
                 public void run() {
                     ((NetworkStatus)networkStatus).updateMainHost();
                     ((NetworkStatus)networkStatus).generateText();
+                }
+            });
+        }
+        else if (Configuration.Change.HOSTNAME.equals(change)) {
+            final JFrame current = this;
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    current.setTitle("yourhomecloud ("+Configuration.getConfiguration().getCurrentHostName()+")");
                 }
             });
         }
@@ -103,6 +118,7 @@ public class MainWindow extends javax.swing.JFrame {
         networkStatus = new NetworkStatus();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -112,6 +128,12 @@ public class MainWindow extends javax.swing.JFrame {
         pathSelector.setFileFilter(new PathSelectorFilter());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle(getApplicationTitle());
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Directories backuped"));
 
@@ -166,6 +188,14 @@ public class MainWindow extends javax.swing.JFrame {
 
         jMenu1.setText("YourHomeCloud");
 
+        jMenuItem6.setText("change HostName");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeHostName(evt);
+            }
+        });
+        jMenu1.add(jMenuItem6);
+
         jMenuItem2.setText("configure backup");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -198,6 +228,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem4);
 
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.META_MASK));
         jMenuItem1.setText("Quit");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -235,7 +266,12 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void quitApplication(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitApplication
-        YourHomeCloud.quitApplication();
+        for (Frame frame : Frame.getFrames()) {
+            if (frame.isActive()) {
+                WindowEvent windowClosing = new WindowEvent(frame, WindowEvent.WINDOW_CLOSING);
+                frame.dispatchEvent(windowClosing);
+            }
+        }
     }//GEN-LAST:event_quitApplication
 
     private void selectDirectoryToBeBackuped(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectDirectoryToBeBackuped
@@ -272,7 +308,17 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_scanNetwork
 
     private void startSync(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startSync
-        
+        ConnectedHosts hosts = new ConnectedHosts(this, true);
+        hosts.setVisible(true);
+        HostConfigurationBean host = hosts.getSelectedHost();
+        for (String dir : Configuration.getConfiguration().getDirectoriesToBeSaved()) {
+            FileSyncerImpl fs = new FileSyncerImpl();
+            try {
+                fs.sync(Paths.get(dir), new NetworkTargetHost(host.getCurrentRMIAddress(), host.getCurrentRMIPort()));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Unable to sync  dir="+dir+" error ="+ex.getMessage());
+            }
+        }
     }//GEN-LAST:event_startSync
 
     private void configureNetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureNetwork
@@ -283,6 +329,15 @@ public class MainWindow extends javax.swing.JFrame {
             Configuration.getConfiguration().setNetworkInterface(selected);
         }
     }//GEN-LAST:event_configureNetwork
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        YourHomeCloud.quitApplication();
+    }//GEN-LAST:event_formWindowClosing
+
+    private void changeHostName(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeHostName
+        String resp = JOptionPane.showInputDialog(this, "New host name");
+        if (resp!=null && !"".equals(resp)) Configuration.getConfiguration().setCurrentHostName(resp);
+    }//GEN-LAST:event_changeHostName
 
     /**
      * @param args the command line arguments
@@ -318,6 +373,18 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
     }
+    private String getApplicationTitle() {
+        String currentHostName = Configuration.getConfiguration().getCurrentHostName();
+        if (currentHostName==null||"".equals(currentHostName)) {
+            return YOURHOMECLOUD;
+        }
+        else {
+            return YOURHOMECLOUD+" ("+currentHostName+")";
+        }
+    }
+    
+    private final static String YOURHOMECLOUD ="YourHomeCloud";
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
@@ -326,6 +393,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel networkPanel;
