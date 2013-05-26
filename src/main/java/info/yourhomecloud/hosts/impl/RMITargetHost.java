@@ -4,7 +4,6 @@ import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,12 +11,16 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-public class NetworkTargetHost implements TargetHost {
+public class RMITargetHost implements TargetHost {
     
     FileUtils fileUtils;
     
-    public NetworkTargetHost(String host,int port) throws RemoteException, NotBoundException {
-        fileUtils = RMIUtils.getRemoteFileUtils(host, port);
+    public RMITargetHost(String host,int port) throws IOException {
+        try {
+            fileUtils = RMIUtils.getRemoteFileUtils(host, port);
+        } catch (RemoteException | NotBoundException ex) {
+            throw new IOException("unable to obtain remote object",ex);
+        }
     }
 
     @Override

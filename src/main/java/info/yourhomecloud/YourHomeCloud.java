@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -28,6 +26,7 @@ public class YourHomeCloud {
                 throw new RuntimeException("unable to create configuration diretory",e);
             }
         }
+        System.err.println(confPath.toString());
         Configuration.getConfiguration(confPath);
 //        BroadcasterListener broadcasterListener = null ;
 //        try {

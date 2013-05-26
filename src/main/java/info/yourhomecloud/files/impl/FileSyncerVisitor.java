@@ -1,5 +1,7 @@
 package info.yourhomecloud.files.impl;
 
+import info.yourhomecloud.files.newpackage.events.EndOfCopy;
+import info.yourhomecloud.files.newpackage.events.StartOfCopy;
 import info.yourhomecloud.hosts.TargetHost;
 
 import java.io.IOException;
@@ -23,6 +25,8 @@ public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         Path rel = this.source.relativize(dir);
         this.targetHost.createDirectoryIfNotExist(rel);
+        setChanged();
+        notifyObservers(new StartOfCopy(dir));
         return FileVisitResult.CONTINUE;
     }
 
@@ -32,10 +36,10 @@ public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  
             Path rel = this.source.relativize(file);
             if (!this.targetHost.isFileExistingAndNotModifiedSince(rel,attrs.lastModifiedTime().toMillis())) {
                 this.setChanged();
-                notifyObservers("start of copy :"+file.toString());
+                notifyObservers(new StartOfCopy(file));
                 this.targetHost.copyFile(file,rel);
                 this.setChanged();
-                notifyObservers("end of copy :"+file.toString());
+                notifyObservers(new EndOfCopy(file));
             }
         }
         return FileVisitResult.CONTINUE;
@@ -48,6 +52,8 @@ public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        setChanged();
+        notifyObservers(new EndOfCopy(dir));
         return FileVisitResult.CONTINUE;
     }
 

@@ -7,11 +7,13 @@ package info.yourhomecloud.gui;
 import info.yourhomecloud.YourHomeCloud;
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.configuration.HostConfigurationBean;
-import info.yourhomecloud.files.impl.FileSyncerImpl;
-import info.yourhomecloud.hosts.impl.NetworkTargetHost;
+import info.yourhomecloud.files.FileSyncer;
+import info.yourhomecloud.files.FileSyncerBuilder;
+import info.yourhomecloud.hosts.TargetHost;
+import info.yourhomecloud.hosts.TargetHostBuilder;
+import info.yourhomecloud.hosts.impl.RMITargetHost;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
-import info.yourhomecloud.network.rmi.RMIUtils;
 import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
@@ -34,12 +36,14 @@ import javax.swing.JOptionPane;
 public class MainWindow extends javax.swing.JFrame {
 
     private String mainHost;
+    private final CopyStatus copyStatus;
 
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
         initComponents();
+        this.copyStatus = new CopyStatus(this, true);
         Configuration.getConfiguration().addObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -54,41 +58,37 @@ public class MainWindow extends javax.swing.JFrame {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ((NetworkStatus)networkStatus).updateMainHost();
-                    ((NetworkStatus)networkStatus).generateText();
+                    ((NetworkStatus) networkStatus).updateMainHost();
+                    ((NetworkStatus) networkStatus).generateText();
                 }
             });
-        }
-        else if (Configuration.Change.HOSTNAME.equals(change)) {
+        } else if (Configuration.Change.HOSTNAME.equals(change)) {
             final JFrame current = this;
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    current.setTitle("yourhomecloud ("+Configuration.getConfiguration().getCurrentHostName()+")");
+                    current.setTitle("yourhomecloud (" + Configuration.getConfiguration().getCurrentHostName() + ")");
                 }
             });
-        }
-        else if (Configuration.Change.NETWORK_INTERFACE.equals(change)) {
+        } else if (Configuration.Change.NETWORK_INTERFACE.equals(change)) {
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ((NetworkStatus)networkStatus).updateInterface();
-                    ((NetworkStatus)networkStatus).generateText();
+                    ((NetworkStatus) networkStatus).updateInterface();
+                    ((NetworkStatus) networkStatus).generateText();
                 }
             });
-        }
-        else if (Configuration.Change.OTHER_HOSTS.equals(change)) {
+        } else if (Configuration.Change.OTHER_HOSTS.equals(change)) {
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ((NetworkStatus)networkStatus).updateOtherHosts();
-                    ((NetworkStatus)networkStatus).generateText();
+                    ((NetworkStatus) networkStatus).updateOtherHosts();
+                    ((NetworkStatus) networkStatus).generateText();
                 }
             });
-        }
-        else if (Configuration.Change.DIRECTORIES_TO_BE_SAVED.equals(change)) {
+        } else if (Configuration.Change.DIRECTORIES_TO_BE_SAVED.equals(change)) {
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -96,7 +96,7 @@ public class MainWindow extends javax.swing.JFrame {
                     pathsToBeSaved.setModel(new DirectoriesToBeBackupedModel());
                 }
             });
-            
+
         }
     }
 
@@ -123,6 +123,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
 
         pathSelector.setFileFilter(new PathSelectorFilter());
@@ -228,6 +229,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem4);
 
+        jMenuItem7.setText("Show Copy Status");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showCopyStatus(evt);
+            }
+        });
+        jMenu1.add(jMenuItem7);
+
         jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.META_MASK));
         jMenuItem1.setText("Quit");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -311,14 +320,33 @@ public class MainWindow extends javax.swing.JFrame {
         ConnectedHosts hosts = new ConnectedHosts(this, true);
         hosts.setVisible(true);
         HostConfigurationBean host = hosts.getSelectedHost();
-        for (String dir : Configuration.getConfiguration().getDirectoriesToBeSaved()) {
-            FileSyncerImpl fs = new FileSyncerImpl();
-            try {
-                fs.sync(Paths.get(dir), new NetworkTargetHost(host.getCurrentRMIAddress(), host.getCurrentRMIPort()));
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Unable to sync  dir="+dir+" error ="+ex.getMessage());
-            }
+        if (host == null) {
+            return;
         }
+
+        // start to sync local host directories on the selected target host
+        // ----------------------------------------------------------------
+        final FileSyncer fs = FileSyncerBuilder.createMonodirectionalFileSyncer();
+        final TargetHost targetHost;
+        try {
+            targetHost = TargetHostBuilder.createRMITargetHost(host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "unable to obtain remote proxy error=" + ex.getMessage());
+            return;
+        }
+        new Thread() {
+            @Override
+            public void run() {
+                for (String dir : Configuration.getConfiguration().getDirectoriesToBeSaved()) {
+                    try {
+                        fs.sync(Paths.get(dir), targetHost,copyStatus);
+                    } catch (Exception ex) {
+                        //
+                    }
+                }
+            }
+        }.start();
+        
     }//GEN-LAST:event_startSync
 
     private void configureNetwork(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureNetwork
@@ -336,8 +364,14 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void changeHostName(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeHostName
         String resp = JOptionPane.showInputDialog(this, "New host name");
-        if (resp!=null && !"".equals(resp)) Configuration.getConfiguration().setCurrentHostName(resp);
+        if (resp != null && !"".equals(resp)) {
+            Configuration.getConfiguration().setCurrentHostName(resp);
+        }
     }//GEN-LAST:event_changeHostName
+
+    private void showCopyStatus(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCopyStatus
+        copyStatus.setVisible(true);
+    }//GEN-LAST:event_showCopyStatus
 
     /**
      * @param args the command line arguments
@@ -373,18 +407,16 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
     }
+
     private String getApplicationTitle() {
         String currentHostName = Configuration.getConfiguration().getCurrentHostName();
-        if (currentHostName==null||"".equals(currentHostName)) {
+        if (currentHostName == null || "".equals(currentHostName)) {
             return YOURHOMECLOUD;
-        }
-        else {
-            return YOURHOMECLOUD+" ("+currentHostName+")";
+        } else {
+            return YOURHOMECLOUD + " (" + currentHostName + ")";
         }
     }
-    
-    private final static String YOURHOMECLOUD ="YourHomeCloud";
-    
+    private final static String YOURHOMECLOUD = "YourHomeCloud";
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
@@ -394,6 +426,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel networkPanel;

@@ -1,7 +1,7 @@
 package info.yourhomecloud.configuration;
 
 import info.yourhomecloud.files.impl.FileSyncerImpl;
-import info.yourhomecloud.hosts.impl.NetworkTargetHost;
+import info.yourhomecloud.hosts.impl.RMITargetHost;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
