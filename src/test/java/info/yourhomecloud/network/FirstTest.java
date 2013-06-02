@@ -1,25 +1,18 @@
 package info.yourhomecloud.network;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import info.yourhomecloud.RootTest;
-import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.broadcast.Broadcaster;
-import info.yourhomecloud.network.broadcast.BroadcasterListener;
 import info.yourhomecloud.network.rmi.RMIUtils;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.NotBoundException;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
 import org.apache.log4j.Logger;
-import org.junit.Ignore;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 public class FirstTest extends RootTest {
@@ -29,6 +22,13 @@ public class FirstTest extends RootTest {
         NetworkUtils.getAdresses();
     }
     
+    @Test
+    public void path() {
+        Path p1= Paths.get("/tmp/t");
+        Path p2= Paths.get("/truc/tmp/t");
+        Path relativize = p1.relativize(p2);
+        System.out.println(relativize);
+    }
     
     @Test
     public void testBroadcast() throws IOException, InterruptedException {

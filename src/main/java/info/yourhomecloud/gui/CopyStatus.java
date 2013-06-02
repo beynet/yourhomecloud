@@ -4,11 +4,14 @@
  */
 package info.yourhomecloud.gui;
 
+import info.yourhomecloud.files.newpackage.events.EndOfCopy;
 import info.yourhomecloud.files.newpackage.events.FileSyncerEvent;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
 
 /**
  *
@@ -16,7 +19,8 @@ import javax.swing.tree.DefaultTreeModel;
  */
 public class CopyStatus extends javax.swing.JDialog implements Observer {
 
-    private DefaultTreeModel treeModel;
+    private TreeModel treeModel;
+    private TreeCellRenderer renderer ;
     
     /**
      * Creates new form CopyStatus
@@ -24,7 +28,8 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
     public CopyStatus(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("/");
-        treeModel = new DefaultTreeModel(rootNode);
+        treeModel = new CopyStatusTreeModel();
+        renderer = new CopyStatusTreeCellRenderer();
         initComponents();
     }
 
@@ -43,6 +48,7 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         copyStatusTree.setModel(treeModel);
+        copyStatusTree.setCellRenderer(renderer);
         jScrollPane2.setViewportView(copyStatusTree);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -108,8 +114,9 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-//                    jTextArea1.append(evt.getMessage());
-//                    jTextArea1.append("\n");
+                    boolean completed = false ;
+                    if (evt instanceof EndOfCopy) completed = true;
+                    ((CopyStatusTreeModel)treeModel).addFileToBeCopied(evt.getFile(),completed);
                 }
             });
 

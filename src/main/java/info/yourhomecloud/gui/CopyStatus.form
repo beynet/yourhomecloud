@@ -45,6 +45,9 @@
             <Property name="model" type="javax.swing.tree.TreeModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="treeModel" type="code"/>
             </Property>
+            <Property name="cellRenderer" type="javax.swing.tree.TreeCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="renderer" type="code"/>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>

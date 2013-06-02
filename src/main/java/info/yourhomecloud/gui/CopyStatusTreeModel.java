@@ -4,7 +4,11 @@
  */
 package info.yourhomecloud.gui;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -18,14 +22,27 @@ public class CopyStatusTreeModel implements TreeModel {
     CopyStatusElement root;
 
     public CopyStatusTreeModel() {
-        root = new CopyStatusElement(Paths.get("/"));
+        root = new CopyStatusElement(Paths.get("/"),true);
     }
 
     @Override
     public Object getRoot() {
         return root;
     }
-
+    
+    public void addFileToBeCopied(Path file,boolean completed) {
+        CopyStatusElement addElement = root.addElement(file,completed);
+        addElement.setCompleted(completed);
+        fireEvent(root);
+    }
+    
+    protected void fireEvent(CopyStatusElement element) {
+        TreeModelEvent evt = new TreeModelEvent(this,new Object[] {element});
+        for (TreeModelListener tml : listeners) {
+            tml.treeStructureChanged(evt);
+        }
+    }
+    
     @Override
     public Object getChild(Object parent, int index) {
         return ((CopyStatusElement) parent).getChild(index);
@@ -47,16 +64,19 @@ public class CopyStatusTreeModel implements TreeModel {
 
     @Override
     public int getIndexOfChild(Object parent, Object child) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((CopyStatusElement)parent).getIndexOfChild((CopyStatusElement)child);
     }
 
     @Override
     public void addTreeModelListener(TreeModelListener l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        listeners.add(l);
     }
 
     @Override
     public void removeTreeModelListener(TreeModelListener l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        listeners.remove(l);
     }
+    
+    
+    List<TreeModelListener> listeners = new ArrayList<>();
 }
