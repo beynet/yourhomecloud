@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
@@ -22,7 +23,7 @@ public class CopyStatusTreeModel implements TreeModel {
     CopyStatusElement root;
 
     public CopyStatusTreeModel() {
-        root = new CopyStatusElement(Paths.get("/"),true);
+        root = new CopyStatusElement(Paths.get("/"),true,null);
     }
 
     @Override
@@ -33,11 +34,20 @@ public class CopyStatusTreeModel implements TreeModel {
     public void addFileToBeCopied(Path file,boolean completed) {
         CopyStatusElement addElement = root.addElement(file,completed);
         addElement.setCompleted(completed);
-        fireEvent(root);
+        fireEvent(addElement);
+    }
+    
+    
+    private void createPath(List<CopyStatusElement> paths,CopyStatusElement element) {
+        
+        if (element.getFather()!=null) createPath(paths, element.getFather());
+        paths.add(element);
     }
     
     protected void fireEvent(CopyStatusElement element) {
-        TreeModelEvent evt = new TreeModelEvent(this,new Object[] {element});
+        List<CopyStatusElement> paths = new ArrayList<>();
+        createPath(paths,element.getFather());
+        TreeModelEvent evt = new TreeModelEvent(this,paths.toArray());
         for (TreeModelListener tml : listeners) {
             tml.treeStructureChanged(evt);
         }
@@ -60,10 +70,12 @@ public class CopyStatusTreeModel implements TreeModel {
 
     @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
+        throw new UnsupportedOperationException("not yet");
     }
 
     @Override
     public int getIndexOfChild(Object parent, Object child) {
+        if (parent==null||child==null) return -1;
         return ((CopyStatusElement)parent).getIndexOfChild((CopyStatusElement)child);
     }
 

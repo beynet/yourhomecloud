@@ -15,8 +15,9 @@ import java.util.List;
  */
 public class CopyStatusElement {
 
-    public CopyStatusElement(Path path, boolean completed) {
+    public CopyStatusElement(Path path, boolean completed,CopyStatusElement father) {
         this.path = path.toAbsolutePath().normalize();
+        this.father = father;
         this.completed = completed;
     }
 
@@ -54,9 +55,13 @@ public class CopyStatusElement {
                 return el._addElement(child,completed);
             }
         }
-        CopyStatusElement n = new CopyStatusElement(child, completed);
+        CopyStatusElement n = new CopyStatusElement(child, completed,this);
         childs.add(n);
         return n;
+    }
+    
+    int getIndexOfChild(CopyStatusElement copyStatusElement) {
+        return childs.indexOf(copyStatusElement);
     }
 
     @Override
@@ -66,9 +71,12 @@ public class CopyStatusElement {
     private List<CopyStatusElement> childs = new ArrayList<>();
     private Path path;
     private boolean completed;
+    private CopyStatusElement father;
 
-    int getIndexOfChild(CopyStatusElement copyStatusElement) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+
+    CopyStatusElement getFather() {
+        return father;
     }
     
 }

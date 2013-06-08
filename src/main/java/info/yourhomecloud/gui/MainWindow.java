@@ -11,7 +11,6 @@ import info.yourhomecloud.files.FileSyncer;
 import info.yourhomecloud.files.FileSyncerBuilder;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.hosts.TargetHostBuilder;
-import info.yourhomecloud.hosts.impl.RMITargetHost;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
 import java.awt.Frame;
@@ -23,8 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -43,7 +40,7 @@ public class MainWindow extends javax.swing.JFrame {
      */
     public MainWindow() {
         initComponents();
-        this.copyStatus = new CopyStatus(this, true);
+        this.copyStatus = new CopyStatus(this, false);
         Configuration.getConfiguration().addObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -346,6 +343,7 @@ public class MainWindow extends javax.swing.JFrame {
                 }
             }
         }.start();
+        copyStatus.setVisible(true);
         
     }//GEN-LAST:event_startSync
 
