@@ -4,12 +4,13 @@
  */
 package info.yourhomecloud.gui;
 
-import info.yourhomecloud.files.newpackage.events.EndOfCopy;
-import info.yourhomecloud.files.newpackage.events.FileSyncerEvent;
+import info.yourhomecloud.files.events.EndOfCopy;
+import info.yourhomecloud.files.events.EndOfSync;
+import info.yourhomecloud.files.events.FileSyncerEvent;
+import info.yourhomecloud.files.events.StartOfSync;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 
@@ -20,8 +21,8 @@ import javax.swing.tree.TreeModel;
 public class CopyStatus extends javax.swing.JDialog implements Observer {
 
     private TreeModel treeModel;
-    private TreeCellRenderer renderer ;
-    
+    private TreeCellRenderer renderer;
+
     /**
      * Creates new form CopyStatus
      */
@@ -31,6 +32,15 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
         treeModel = new CopyStatusTreeModel();
         renderer = new CopyStatusTreeCellRenderer();
         initComponents();
+        markSyncCompleted();
+    }
+
+    public void markSyncInProcess() {
+        this.status.setText("IN PROCESS");
+    }
+
+    public final void markSyncCompleted() {
+        this.status.setText("COMPLETED");
     }
 
     /**
@@ -44,6 +54,8 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
 
         jScrollPane2 = new javax.swing.JScrollPane();
         copyStatusTree = new javax.swing.JTree();
+        jLabel1 = new javax.swing.JLabel();
+        status = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -51,15 +63,31 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
         copyStatusTree.setCellRenderer(renderer);
         jScrollPane2.setViewportView(copyStatusTree);
 
+        jLabel1.setText("Sync Statuc :");
+
+        status.setEditable(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(jScrollPane2)
+            .add(layout.createSequentialGroup()
+                .add(23, 23, 23)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(status, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(277, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 278, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(status, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(0, 11, Short.MAX_VALUE))
         );
 
         pack();
@@ -114,9 +142,17 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    boolean completed = false ;
-                    if (evt instanceof EndOfCopy) completed = true;
-                    ((CopyStatusTreeModel)treeModel).addFileToBeCopied(evt.getFile(),completed);
+                    if (evt instanceof StartOfSync) {
+                        markSyncInProcess();
+                    } else if (evt instanceof EndOfSync) {
+                        markSyncCompleted();
+                    } else {
+                        boolean completed = false;
+                        if (evt instanceof EndOfCopy) {
+                            completed = true;
+                        }
+                        ((CopyStatusTreeModel) treeModel).addFileToBeCopied(evt.getFile(), completed);
+                    }
                 }
             });
 
@@ -124,6 +160,8 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree copyStatusTree;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField status;
     // End of variables declaration//GEN-END:variables
 }

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package info.yourhomecloud.files.newpackage.events;
+package info.yourhomecloud.files.events;
 
 import java.nio.file.Path;
 

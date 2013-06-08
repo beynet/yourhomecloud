@@ -1,7 +1,7 @@
 package info.yourhomecloud.files.impl;
 
-import info.yourhomecloud.files.newpackage.events.EndOfCopy;
-import info.yourhomecloud.files.newpackage.events.StartOfCopy;
+import info.yourhomecloud.files.events.EndOfCopy;
+import info.yourhomecloud.files.events.StartOfCopy;
 import info.yourhomecloud.hosts.TargetHost;
 
 import java.io.IOException;
