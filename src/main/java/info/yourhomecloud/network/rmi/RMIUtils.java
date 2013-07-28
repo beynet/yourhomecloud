@@ -20,6 +20,7 @@ public class RMIUtils {
 
     private RMIUtils() {
         try {
+            logger.debug("try to compute local address");
             InetAddress address = NetworkUtils.getAddress(info.yourhomecloud.configuration.Configuration.getConfiguration().getNetworkInterface());
             this.address = address.getHostAddress();
             info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentRMIAddress(this.address);
