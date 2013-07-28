@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 public class NetworkUtils {
 
@@ -83,6 +84,7 @@ public class NetworkUtils {
     }
     
     private static NetworkInterface getInterface(String interfaceName) throws IOException {
+        logger.debug("get network interface from name "+interfaceName);
         NetworkInterface result = null;
         Enumeration<NetworkInterface> list;
         list = NetworkInterface.getNetworkInterfaces();
@@ -98,6 +100,7 @@ public class NetworkUtils {
     }
 
     private static List<InetAddress> getAddressAndBroadcastAddress(String interfaceName) throws IOException {
+        logger.debug("get address and broadcast address for interface "+interfaceName);
         NetworkInterface aInterface = getInterface(interfaceName);
         List<InetAddress> result = null;
         if (aInterface == null) {
@@ -131,6 +134,7 @@ public class NetworkUtils {
     }
 
     public static InetAddress getAddress(String interfaceName) throws IOException {
+        logger.debug("search address from network interface "+interfaceName);
         InetAddress result = null;
         List<InetAddress> res = getAddressAndBroadcastAddress(interfaceName);
         if (res!=null) result = res.get(0);
@@ -166,4 +170,6 @@ public class NetworkUtils {
     }
     public static final int DEFAULT_BROADCAST_PORT = 31003;
     public final static String BROADCAST_BEGIN = "yourhomecloud=";
+    
+    private final static Logger logger = Logger.getLogger(NetworkUtils.class);
 }

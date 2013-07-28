@@ -26,7 +26,7 @@ public class NetworkInterfaces extends AbstractListModel<String> {
         try {
             List<NetworkInterface> interfaces = NetworkUtils.getInterfaces();
             for (NetworkInterface i : interfaces) {
-                this.interfaces.add(i.getDisplayName());
+                this.interfaces.add(i.getName());
             }
         } catch (IOException ex) {
             throw new RuntimeException("unable to retrieve network interfaces", ex);
