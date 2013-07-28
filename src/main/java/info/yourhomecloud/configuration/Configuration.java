@@ -1,14 +1,13 @@
 package info.yourhomecloud.configuration;
 
-import info.yourhomecloud.files.impl.FileSyncerImpl;
-import info.yourhomecloud.hosts.impl.RMITargetHost;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -16,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
-import java.util.Observer;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -94,6 +93,11 @@ public class Configuration extends Observable {
         configuration = new ConfigurationBean();
         HostConfigurationBean localHost = new HostConfigurationBean();
         localHost.setHostKey(UUID.randomUUID().toString());
+        try {
+            localHost.setHostName(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException ex) {
+            
+        }
         localHost.setLastUpdateDate(new Long(System.currentTimeMillis()));
         try {
             localHost.setNetworkInterface(NetworkUtils.getFirstInterface().getDisplayName());
