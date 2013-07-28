@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.RemoteException;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JFileChooser;
@@ -331,6 +332,7 @@ public class MainWindow extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "unable to obtain remote proxy error=" + ex.getMessage());
             return;
         }
+        final MainWindow current = this;
         new Thread() {
             @Override
             public void run() {
@@ -338,7 +340,7 @@ public class MainWindow extends javax.swing.JFrame {
                     try {
                         fs.sync(Paths.get(dir), targetHost,copyStatus);
                     } catch (Exception ex) {
-                        //
+                        JOptionPane.showMessageDialog(current, "Error during  copy " + ex.getMessage());
                     }
                 }
             }
