@@ -4,6 +4,8 @@
  */
 package info.yourhomecloud.gui;
 
+import java.net.NetworkInterface;
+
 /**
  *
  * @author beynet
@@ -22,7 +24,7 @@ public class NetworkConfiguration extends javax.swing.JDialog {
     public String getSelectedInterface() {
         final int selectedIndex = this.jList1.getSelectedIndex();
         if (selectedIndex==-1) return null;
-        return (String)this.jList1.getModel().getElementAt(selectedIndex);
+        return ((NetworkInterface)this.jList1.getModel().getElementAt(selectedIndex)).getName();
     }
 
     /**
