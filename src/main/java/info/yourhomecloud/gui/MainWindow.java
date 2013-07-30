@@ -18,6 +18,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
@@ -340,7 +342,10 @@ public class MainWindow extends javax.swing.JFrame {
                     try {
                         fs.sync(Paths.get(dir), targetHost,copyStatus);
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(current, "Error during  copy " + ex.getMessage());
+                        StringWriter sw = new StringWriter();
+                        sw.append("Error during  copy \n");
+                        ex.printStackTrace(new PrintWriter(sw));
+                        JOptionPane.showMessageDialog(current, sw);
                     }
                 }
             }
