@@ -12,7 +12,13 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.apache.log4j.Logger;
 
-
+/**
+ * this class provides :
+ *  <ul><li>a singleton (accessible using getRMIUtils method) which create RMI registry and exports mandatory objects</li>
+ *  <li>two helper static methods getRemoteConfiguration and getRemoteFileUtils to access to objects exported by another host</li>
+ *  </ul>
+ * @author beynet
+ */
 public class RMIUtils {
     private int rmiPort;
     private Registry registry;
@@ -43,6 +49,7 @@ public class RMIUtils {
             registry = LocateRegistry.createRegistry(rmiPort);
             logger.info("registry created");
             storeObjects();
+            logger.info("objects exported");
         }catch(RemoteException e) {
             throw new RuntimeException(e);
         }
