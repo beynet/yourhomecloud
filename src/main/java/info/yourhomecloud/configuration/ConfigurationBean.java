@@ -9,6 +9,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+/**
+ * bean used to store the XML representation of the configuration
+ * @author beynet
+ */
 @XmlType(name="ConfigurationType")
 @XmlRootElement(name="configuration")
 public class ConfigurationBean {
@@ -30,8 +34,8 @@ public class ConfigurationBean {
         return otherHosts;
     }
     
-    public static Map<String,HostConfigurationBean> getOtherHostsMap(List<HostConfigurationBean> otherHosts) {
-        Map<String,HostConfigurationBean> map = new HashMap<String, HostConfigurationBean>();
+    public static Map<String,HostConfigurationBean> getHostsMapFromHostsList(List<HostConfigurationBean> otherHosts) {
+        Map<String,HostConfigurationBean> map = new HashMap<>();
         for (HostConfigurationBean host : otherHosts) {
             map.put(host.getHostKey(), host);
         }

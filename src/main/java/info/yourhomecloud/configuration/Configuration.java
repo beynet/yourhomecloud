@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -24,6 +23,12 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
+/**
+ * the aim of this class is to reflect the configuration of the application.
+ * This class is a singleton constructed by calling method getConfiguration
+ * Local configuration and configuration of the remotes hosts are saved.
+ * @author beynet
+ */
 public class Configuration extends Observable {
     private boolean mainHost;
 
@@ -108,6 +113,10 @@ public class Configuration extends Observable {
         saveConfiguration(Change.CREATION);
     }
 
+    /**
+     * sync the configuration in the associated XML file
+     * @param c 
+     */
     private void saveConfiguration(Change c) {
         Path configFile = this.configDirectory.resolve("yourhomecloud.xml");
         try {
@@ -120,20 +129,26 @@ public class Configuration extends Observable {
         }
     }
 
+    /**
+     * @return the name of the network interface selected to communicate with other hosts
+     */
     public String getNetworkInterface() {
         return configuration.getLocalhost().getNetworkInterface();
     }
-
+    
+    /**
+     * change the network interface selected to communicate with other hosts
+     * @param i 
+     */
     public void setNetworkInterface(String i) {
         configuration.getLocalhost().setNetworkInterface(i);
         configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
-        //FIXME : restart services
+        // FIXME : restart services
         saveConfiguration(Change.NETWORK_INTERFACE);
     }
 
     /**
      * add dir to the list of directories to be backuped
-     *
      * @param dir
      */
     public void addDirectoryToBeSaved(Path dir) {
@@ -147,7 +162,6 @@ public class Configuration extends Observable {
 
     /**
      * remove dir from the list of directories to be backuped
-     *
      * @param dir
      */
     public void removeDirectoryToBeSaved(Path dir) {
@@ -161,7 +175,7 @@ public class Configuration extends Observable {
     }
 
     /**
-     * define the main host - sync the known hosts with this main host
+     * define the main host - send hosts list known by this host to main host
      *
      * @param hostAddr
      * @param rmiPort
@@ -179,11 +193,18 @@ public class Configuration extends Observable {
         this.mainHostRmiPort = rmiPort;
         RMIUtils.getRMIUtils();
         logger.info("register main host " + mainHostAddr + " port = " + this.mainHostRmiPort);
+        
+        // prepare list of know hosts
+        // including current host
+        // ---------------------------
         List<HostConfigurationBean> hosts = new ArrayList<>();
         hosts.addAll(configuration.getOtherHosts());
         hosts.add(configuration.getLocalhost());
+        // retrieve remote object
         info.yourhomecloud.network.rmi.Configuration remoteConfiguration = RMIUtils.getRemoteConfiguration(hostAddr, rmiPort);
+        // send hosts to main host - in result receive the host list from main host
         List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts, configuration.getLocalhost());
+        
         updateOtherHostsConfiguration(updateHosts, configuration.getLocalhost());
     }
 
@@ -218,7 +239,7 @@ public class Configuration extends Observable {
         synchronized (Configuration.class) {
             if (_configuration == null) {
                 if (paths.length == 0) {
-                    throw new RuntimeException("Directory where configuration files will be stored must be provide at initialization");
+                    throw new RuntimeException("Directory where configuration files will be stored must be provided at initialization");
                 }
                 _configuration = new Configuration(paths[0]);
             }
@@ -252,17 +273,18 @@ public class Configuration extends Observable {
     }
 
     /**
-     * update host list of host known by current host.
-     *
+     * update host list with a list received from another host
      * @param update
-     * @return
+     * @param newHost : host from which the modification was received
+     * @return 
      */
-    public List<HostConfigurationBean> updateOtherHostsConfiguration(List<HostConfigurationBean> update, HostConfigurationBean newHost) {
-        Map<String, HostConfigurationBean> newHostsMap = ConfigurationBean.getOtherHostsMap(update);
-        Map<String, HostConfigurationBean> currentHostsMap = ConfigurationBean.getOtherHostsMap(configuration.getOtherHosts());
+    public List<HostConfigurationBean> updateOtherHostsConfiguration(List<HostConfigurationBean> update,HostConfigurationBean newHost) {
+        Map<String, HostConfigurationBean> newHostsMap = ConfigurationBean.getHostsMapFromHostsList(update);
+        Map<String, HostConfigurationBean> currentHostsMap = ConfigurationBean.getHostsMapFromHostsList(configuration.getOtherHosts());
 
         for (Entry<String, HostConfigurationBean> entry : newHostsMap.entrySet()) {
             HostConfigurationBean newConf = entry.getValue();
+            // we nether update current host configuration
             if (configuration.getLocalhost().getHostKey().equals(newConf.getHostKey())) {
                 continue;
             }
@@ -294,6 +316,9 @@ public class Configuration extends Observable {
         results.add(configuration.getLocalhost());
         results.addAll(configuration.getOtherHosts());
 
+        // main host send host configuration modification all hosts
+        // except to the host from which the modification was received
+        // -----------------------------------------------------------
         if (isMainHost() == true) {
             // notify other hosts
             for (HostConfigurationBean bean : configuration.getOtherHosts()) {
