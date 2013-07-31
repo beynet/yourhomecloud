@@ -37,7 +37,7 @@ public class ConfigurationTests extends RootTest {
         configuration.updateOtherHostsConfiguration(Arrays.asList(host1,host2),host1);
 
         {
-            Map<String, HostConfigurationBean> otherHostsMap = ConfigurationBean.getOtherHostsMap(configuration.getConfigurationBean().getOtherHosts());
+            Map<String, HostConfigurationBean> otherHostsMap = ConfigurationBean.getHostsMapFromHostsList(configuration.getConfigurationBean().getOtherHosts());
             HostConfigurationBean host1Found = otherHostsMap.get(key1);
             assertThat(host1Found, notNullValue());
             assertThat(host1Found.getLastUpdateDate(), is(host1.getLastUpdateDate()));
@@ -60,7 +60,7 @@ public class ConfigurationTests extends RootTest {
 
         //check that conf is updated as expected
         {
-            Map<String, HostConfigurationBean> otherHostsMap = ConfigurationBean.getOtherHostsMap(configuration.getConfigurationBean().getOtherHosts());
+            Map<String, HostConfigurationBean> otherHostsMap = ConfigurationBean.getHostsMapFromHostsList(configuration.getConfigurationBean().getOtherHosts());
             HostConfigurationBean host1Found = otherHostsMap.get(key1);
             assertThat(host1Found, notNullValue());
             assertThat(host1Found.getLastUpdateDate(), is(host1.getLastUpdateDate()));

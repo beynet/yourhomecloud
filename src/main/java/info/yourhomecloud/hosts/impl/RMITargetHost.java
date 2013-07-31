@@ -4,6 +4,7 @@ import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -14,67 +15,80 @@ import java.rmi.RemoteException;
 import org.apache.log4j.Logger;
 
 public class RMITargetHost implements TargetHost {
-    
+
     FileUtils fileUtils;
-    
-    public RMITargetHost(String host,int port) throws IOException {
+
+    public RMITargetHost(String host, int port) throws IOException {
         try {
             fileUtils = RMIUtils.getRemoteFileUtils(host, port);
         } catch (RemoteException | NotBoundException ex) {
-            throw new IOException("unable to obtain remote object",ex);
+            throw new IOException("unable to obtain remote object", ex);
         }
+    }
+
+    private String getPathStrPlateformIndependant(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException("path must not be null");
+        }
+        String pathStr = path.toString();
+        if (!"/".equals(File.separator)) {
+            pathStr=pathStr.replace(File.separator, "/");
+        }
+        return pathStr;
     }
 
     @Override
     public void createDirectoryIfNotExist(Path rel) throws IOException {
-        fileUtils.createDirectoryIfNotExist(Configuration.getConfiguration().getCurrentHostKey(), rel.toString());
+        fileUtils.createDirectoryIfNotExist(Configuration.getConfiguration().getCurrentHostKey(), getPathStrPlateformIndependant(rel));
     }
 
     @Override
     public boolean isFileExistingAndNotModifiedSince(Path rel, long millis) throws IOException {
-        return fileUtils.isFileExistingAndNotModifiedSince(Configuration.getConfiguration().getCurrentHostKey(), rel.toString(), millis);
+        return fileUtils.isFileExistingAndNotModifiedSince(Configuration.getConfiguration().getCurrentHostKey(), getPathStrPlateformIndependant(rel), millis);
     }
 
-    
-    protected void copyByChunk(Path file,BasicFileAttributes attrs,Path rel) throws IOException {
-        logger.debug("copy by chunk "+file.toString());
+    protected void copyByChunk(Path file, BasicFileAttributes attrs, Path rel) throws IOException {
+        logger.debug("copy by chunk " + file.toString());
         long size = attrs.size();
-        long done = 0 ;
-        byte[] bytes = new byte[1024*1024];
+        long done = 0;
+        byte[] bytes = new byte[1024 * 1024];
         InputStream is = Files.newInputStream(file);
         final String currentHostKey = Configuration.getConfiguration().getCurrentHostKey();
-        while (done!=size) {
+        while (done != size) {
             int read = is.read(bytes);
-            if (read==-1) break;
+            if (read == -1) {
+                break;
+            }
             long offset = done;
-            done+=read;
+            done += read;
             final boolean last;
-            if (done==size) last = true;
-            else last = false;
-            fileUtils.copyFileByChunk(currentHostKey, bytes,offset,read, last,attrs.lastModifiedTime().toMillis(), rel.toString());
+            if (done == size) {
+                last = true;
+            } else {
+                last = false;
+            }
+            fileUtils.copyFileByChunk(currentHostKey, bytes, offset, read, last, attrs.lastModifiedTime().toMillis(), getPathStrPlateformIndependant(rel));
         }
     }
-    
+
     @Override
     public void copyFile(Path file, Path rel) throws IOException {
         BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-        if (attrs.size()>(1024L*1014L)) {
+        if (attrs.size() > (1024L * 1014L)) {
             copyByChunk(file, attrs, rel);
         } else {
-            fileUtils.copyFile(Configuration.getConfiguration().getCurrentHostKey(), Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), rel.toString());
+            fileUtils.copyFile(Configuration.getConfiguration().getCurrentHostKey(), Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), getPathStrPlateformIndependant(rel));
         }
     }
 
     @Override
     public boolean isFileExisting(Path rel) throws IOException {
-        return fileUtils.isFileExisting(Configuration.getConfiguration().getCurrentHostKey(), rel.toString());
+        return fileUtils.isFileExisting(Configuration.getConfiguration().getCurrentHostKey(), getPathStrPlateformIndependant(rel));
     }
 
     @Override
     public void removeFilesRemovedOnSourceSide(Path source) throws IOException {
         // TODO Auto-generated method stub
-
     }
-
     Logger logger = Logger.getLogger(RMITargetHost.class);
 }
