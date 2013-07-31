@@ -16,14 +16,14 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  {
-    protected FileSyncerVisitor(Path source,TargetHost targetHost) {
-        this.source = source ;
+    protected FileSyncerVisitor(Path toBeSynced,TargetHost targetHost) {
+        this.toBeSynced = toBeSynced ;
         this.targetHost = targetHost;
     }
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        Path rel = this.source.relativize(dir);
+        Path rel = this.toBeSynced.getParent().relativize(dir);
         this.targetHost.createDirectoryIfNotExist(rel);
         setChanged();
         notifyObservers(new StartOfCopy(dir));
@@ -33,7 +33,7 @@ public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
-            Path rel = this.source.relativize(file);
+            Path rel = this.toBeSynced.getParent().relativize(file);
             if (!this.targetHost.isFileExistingAndNotModifiedSince(rel,attrs.lastModifiedTime().toMillis())) {
                 this.setChanged();
                 notifyObservers(new StartOfCopy(file));
@@ -57,7 +57,7 @@ public class FileSyncerVisitor extends Observable implements FileVisitor<Path>  
         return FileVisitResult.CONTINUE;
     }
 
-    private Path       source;
+    private Path       toBeSynced;
     private TargetHost targetHost ;
 
     @SuppressWarnings("unused")
