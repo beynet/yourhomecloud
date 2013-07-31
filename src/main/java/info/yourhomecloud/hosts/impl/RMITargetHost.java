@@ -12,6 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.log4j.Logger;
 
 public class RMITargetHost implements TargetHost {
@@ -26,25 +29,26 @@ public class RMITargetHost implements TargetHost {
         }
     }
 
-    private String getPathStrPlateformIndependant(Path path) {
+    private List<String> getPathListFromPath(Path path) {
         if (path == null) {
             throw new IllegalArgumentException("path must not be null");
         }
-        String pathStr = path.toString();
-        if (!"/".equals(File.separator)) {
-            pathStr=pathStr.replace(File.separator, "/");
+        List<String> result = new ArrayList<>();
+        Iterator<Path> iterator = path.iterator();
+        while(iterator.hasNext()) {
+            result.add(iterator.next().toString());
         }
-        return pathStr;
+        return result;
     }
 
     @Override
     public void createDirectoryIfNotExist(Path rel) throws IOException {
-        fileUtils.createDirectoryIfNotExist(Configuration.getConfiguration().getCurrentHostKey(), getPathStrPlateformIndependant(rel));
+        fileUtils.createDirectoryIfNotExist(Configuration.getConfiguration().getCurrentHostKey(), getPathListFromPath(rel));
     }
 
     @Override
     public boolean isFileExistingAndNotModifiedSince(Path rel, long millis) throws IOException {
-        return fileUtils.isFileExistingAndNotModifiedSince(Configuration.getConfiguration().getCurrentHostKey(), getPathStrPlateformIndependant(rel), millis);
+        return fileUtils.isFileExistingAndNotModifiedSince(Configuration.getConfiguration().getCurrentHostKey(), getPathListFromPath(rel), millis);
     }
 
     protected void copyByChunk(Path file, BasicFileAttributes attrs, Path rel) throws IOException {
@@ -67,7 +71,7 @@ public class RMITargetHost implements TargetHost {
             } else {
                 last = false;
             }
-            fileUtils.copyFileByChunk(currentHostKey, bytes, offset, read, last, attrs.lastModifiedTime().toMillis(), getPathStrPlateformIndependant(rel));
+            fileUtils.copyFileByChunk(currentHostKey, bytes, offset, read, last, attrs.lastModifiedTime().toMillis(), getPathListFromPath(rel));
         }
     }
 
@@ -77,13 +81,13 @@ public class RMITargetHost implements TargetHost {
         if (attrs.size() > (1024L * 1014L)) {
             copyByChunk(file, attrs, rel);
         } else {
-            fileUtils.copyFile(Configuration.getConfiguration().getCurrentHostKey(), Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), getPathStrPlateformIndependant(rel));
+            fileUtils.copyFile(Configuration.getConfiguration().getCurrentHostKey(), Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), getPathListFromPath(rel));
         }
     }
 
     @Override
     public boolean isFileExisting(Path rel) throws IOException {
-        return fileUtils.isFileExisting(Configuration.getConfiguration().getCurrentHostKey(), getPathStrPlateformIndependant(rel));
+        return fileUtils.isFileExisting(Configuration.getConfiguration().getCurrentHostKey(), getPathListFromPath(rel));
     }
 
     @Override

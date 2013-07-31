@@ -3,6 +3,7 @@ package info.yourhomecloud.network.rmi;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface FileUtils extends Remote {
     /**
@@ -12,7 +13,7 @@ public interface FileUtils extends Remote {
      * @throws RemoteException
      * @throws IOException 
      */
-    public void createDirectoryIfNotExist(String client,String rel) throws RemoteException,IOException ;
+    public void createDirectoryIfNotExist(String client,List<String> relPath) throws RemoteException,IOException ;
     /**
      * ask to remote server if remote file exist and was not modified since specified date
      * @param client
@@ -22,7 +23,7 @@ public interface FileUtils extends Remote {
      * @throws RemoteException
      * @throws IOException 
      */
-    boolean isFileExistingAndNotModifiedSince(String client,String rel, long millis) throws RemoteException,IOException;
+    boolean isFileExistingAndNotModifiedSince(String client,List<String> rel, long millis) throws RemoteException,IOException;
 
     /**
      * copy specified file on the remote host
@@ -33,7 +34,7 @@ public interface FileUtils extends Remote {
      * @throws RemoteException
      * @throws IOException 
      */
-    void copyFile(String client,byte[] file,long modified, String rel) throws RemoteException,IOException;
+    void copyFile(String client,byte[] file,long modified, List<String> rel) throws RemoteException,IOException;
     
     /**
      * copy by chunk specified file
@@ -47,7 +48,7 @@ public interface FileUtils extends Remote {
      * @throws RemoteException
      * @throws IOException 
      */
-    void copyFileByChunk(String client,byte[] file,long offset,int length,boolean last,long modified, String rel) throws RemoteException,IOException;
+    void copyFileByChunk(String client,byte[] file,long offset,int length,boolean last,long modified, List<String> rel) throws RemoteException,IOException;
 
     /**
      * ask to remote host if specified file existsil faut 
@@ -57,7 +58,7 @@ public interface FileUtils extends Remote {
      * @throws RemoteException
      * @throws IOException 
      */
-    boolean isFileExisting(String client,String rel) throws RemoteException,IOException;
+    boolean isFileExisting(String client,List<String> rel) throws RemoteException,IOException;
 
 //    void removeFilesRemovedOnSourceSide(String client,Path source) throws IOException;
     
