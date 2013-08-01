@@ -10,13 +10,14 @@ import info.yourhomecloud.configuration.HostConfigurationBean;
  *
  * @author beynet
  */
-public class ConnectedHosts extends javax.swing.JDialog {
+public class HostsSelector extends javax.swing.JDialog {
 
     /**
      * Creates new form ConnectedHosts
      */
-    public ConnectedHosts(java.awt.Frame parent, boolean modal) {
+    public HostsSelector(java.awt.Frame parent, boolean modal,boolean connectedHostsOnly) {
         super(parent, modal);
+        this.connectedHostsOnly = connectedHostsOnly;
         initComponents();
     }
 
@@ -36,7 +37,7 @@ public class ConnectedHosts extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jList1.setModel(new ConnectedHostsModel());
+        jList1.setModel(new info.yourhomecloud.gui.HostsSelectorModel(connectedHostsOnly));
         jScrollPane1.setViewportView(jList1);
 
         jLabel1.setText("Select host");
@@ -102,20 +103,20 @@ public class ConnectedHosts extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ConnectedHosts.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HostsSelector.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ConnectedHosts.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HostsSelector.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ConnectedHosts.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HostsSelector.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ConnectedHosts.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HostsSelector.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ConnectedHosts dialog = new ConnectedHosts(new javax.swing.JFrame(), true);
+                HostsSelector dialog = new HostsSelector(new javax.swing.JFrame(), true,true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -138,4 +139,6 @@ public class ConnectedHosts extends javax.swing.JDialog {
         if (selectedIndex==-1) return null;
         return (HostConfigurationBean)jList1.getModel().getElementAt(selectedIndex);
     }
+    
+    private boolean connectedHostsOnly ;
 }

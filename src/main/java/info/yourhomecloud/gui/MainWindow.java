@@ -317,7 +317,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_scanNetwork
 
     private void startSync(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startSync
-        ConnectedHosts hosts = new ConnectedHosts(this, true);
+        HostsSelector hosts = new HostsSelector(this, true,true);
         hosts.setVisible(true);
         HostConfigurationBean host = hosts.getSelectedHost();
         if (host == null) {

@@ -68,7 +68,7 @@
         <Component class="javax.swing.JList" name="jList1">
           <Properties>
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new ConnectedHostsModel()" type="code"/>
+              <Connection code="new info.yourhomecloud.gui.HostsSelectorModel(connectedHostsOnly)" type="code"/>
             </Property>
           </Properties>
         </Component>

@@ -14,13 +14,24 @@ import javax.swing.AbstractListModel;
  *
  * @author beynet
  */
-public class ConnectedHostsModel extends AbstractListModel<HostConfigurationBean>{
-    private List<HostConfigurationBean> hosts ;
-    
-    public ConnectedHostsModel() {
+public class HostsSelectorModel extends AbstractListModel<HostConfigurationBean> {
+
+    private List<HostConfigurationBean> hosts;
+
+    /**
+     * Hosts selector model
+     *
+     * @param connectedOnly : if true the model will only display connected
+     * hosts
+     */
+    public HostsSelectorModel(boolean connectedOnly) {
         hosts = new ArrayList<>();
-        for (HostConfigurationBean h :Configuration.getConfiguration().getOtherHosts()) {
-            if (h.getCurrentRMIAddress()!=null) {
+        for (HostConfigurationBean h : Configuration.getConfiguration().getOtherHosts()) {
+            if (connectedOnly == true) {
+                if (h.getCurrentRMIAddress() != null) {
+                    hosts.add(h);
+                }
+            } else {
                 hosts.add(h);
             }
         }
