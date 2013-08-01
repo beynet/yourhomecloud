@@ -8,6 +8,7 @@ import info.yourhomecloud.files.events.EndOfCopy;
 import info.yourhomecloud.files.events.EndOfSync;
 import info.yourhomecloud.files.events.FileSyncerEvent;
 import info.yourhomecloud.files.events.StartOfSync;
+import java.awt.Point;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -31,10 +32,24 @@ public class CopyStatus extends javax.swing.JDialog implements Observer {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("/");
         treeModel = new CopyStatusTreeModel();
         renderer = new CopyStatusTreeCellRenderer();
+        
         initComponents();
         markSyncCompleted();
     }
 
+    @Override
+    public void setVisible(boolean b) {
+        if (b == true) {
+            Point location = getParent().getLocation();
+            int x = location.x+getParent().getWidth()/2;
+            int y = location.y+getParent().getHeight()/2;
+            setLocation(x,y);
+        }
+        super.setVisible(b);
+    }
+
+    
+    
     public void markSyncInProcess() {
         this.status.setText("IN PROCESS");
     }
