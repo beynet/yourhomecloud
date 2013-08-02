@@ -1,5 +1,6 @@
 package info.yourhomecloud.configuration;
 
+import info.yourhomecloud.files.impl.DeleteFilesVisitor;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
 
@@ -344,6 +345,33 @@ public class Configuration extends Observable {
      */
     protected void clearOtherHostsConfiguration() {
         configuration.getOtherHosts().clear();
+    }
+    
+    /**
+     * remove this host from configuration and also
+     * backuped files associated with this account
+     * @param hostKey 
+     */
+    public void removeHost(String hostKey) throws IOException{
+        if (hostKey==null) return;
+        List<HostConfigurationBean> otherHosts = configuration.getOtherHosts();
+        HostConfigurationBean found = null;
+        for (HostConfigurationBean toRemove : otherHosts) {
+            if (hostKey.equals(toRemove.getHostKey())) {
+                found = toRemove;
+                break;
+            }
+        }
+        
+//        
+        Path resolve = getConfigurationPath().resolve(found.getHostKey());
+        if (Files.exists(resolve)) {
+            System.err.println(resolve);
+            Files.walkFileTree(resolve,new DeleteFilesVisitor());
+        }
+        
+        otherHosts.remove(found);
+        saveConfiguration(Change.OTHER_HOSTS);
     }
 
     protected ConfigurationBean getConfigurationBean() {

@@ -4,23 +4,54 @@
  */
 package info.yourhomecloud.gui;
 
+import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.configuration.HostConfigurationBean;
+import java.util.Observable;
+import java.util.Observer;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author beynet
  */
 public class HostsSelector extends javax.swing.JDialog {
-
+    private Observer obs;
     /**
      * Creates new form ConnectedHosts
+     * @param parent
+     * @param modal
+     * @param connectedHostsOnly : display only connected hosts
      */
     public HostsSelector(java.awt.Frame parent, boolean modal,boolean connectedHostsOnly) {
         super(parent, modal);
         this.connectedHostsOnly = connectedHostsOnly;
         initComponents();
+        if (this.connectedHostsOnly==false) jButton1.setVisible(false);
+        obs = new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                configurationChanged((Configuration) o, (Configuration.Change) arg);
+            }
+            
+        };
+        Configuration.getConfiguration().addObserver(obs);
     }
 
+    private void configurationChanged(Configuration configuration, Configuration.Change change) {
+        if (Configuration.Change.OTHER_HOSTS.equals(change)) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ((HostsSelectorModel)jHostList.getModel()).refresh();
+                    jHostList.setSelectedIndex(-1);
+                    jHostList.repaint();
+                }
+            });
+            
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -31,14 +62,24 @@ public class HostsSelector extends javax.swing.JDialog {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        jHostList = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                HostsSelector.this.windowClosed(evt);
+            }
+        });
 
-        jList1.setModel(new info.yourhomecloud.gui.HostsSelectorModel(connectedHostsOnly));
-        jScrollPane1.setViewportView(jList1);
+        jHostList.setModel(new info.yourhomecloud.gui.HostsSelectorModel(connectedHostsOnly));
+        jHostList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                onMouseClick(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jHostList);
 
         jLabel1.setText("Select host");
 
@@ -53,30 +94,32 @@ public class HostsSelector extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 229, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(58, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jButton1)
-                .add(45, 45, 45))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(jButton1)
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 395, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(23, 23, 23))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(37, 37, 37)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 140, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
                         .add(100, 100, 100)
-                        .add(jLabel1)))
-                .add(18, 18, 18)
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(37, 37, 37)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                        .add(18, 18, 18)))
                 .add(jButton1)
-                .addContainerGap(8, Short.MAX_VALUE))
+                .add(15, 15, 15))
         );
 
         pack();
@@ -85,6 +128,17 @@ public class HostsSelector extends javax.swing.JDialog {
     private void onConfirm(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onConfirm
         this.setVisible(false);
     }//GEN-LAST:event_onConfirm
+
+    private void onMouseClick(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onMouseClick
+        if (SwingUtilities.isRightMouseButton(evt)) {
+            new HostSelectorContextMenu(jHostList,evt);
+        }
+    }//GEN-LAST:event_onMouseClick
+
+    private void windowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowClosed
+        logger.debug("closing - removed from configuration observers");
+        Configuration.getConfiguration().deleteObserver(obs);
+    }//GEN-LAST:event_windowClosed
 
     /**
      * @param args the command line arguments
@@ -129,16 +183,18 @@ public class HostsSelector extends javax.swing.JDialog {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JList jHostList;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
     HostConfigurationBean getSelectedHost() {
-        final int selectedIndex = jList1.getSelectedIndex();
+        final int selectedIndex = jHostList.getSelectedIndex();
         if (selectedIndex==-1) return null;
-        return (HostConfigurationBean)jList1.getModel().getElementAt(selectedIndex);
+        return (HostConfigurationBean)jHostList.getModel().getElementAt(selectedIndex);
     }
     
     private boolean connectedHostsOnly ;
+    
+    private final static Logger logger = Logger.getLogger(HostsSelector.class);
 }

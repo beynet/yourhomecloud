@@ -124,6 +124,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem7 = new javax.swing.JMenuItem();
+        jMenuItem8 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
 
         pathSelector.setFileFilter(new PathSelectorFilter());
@@ -236,6 +237,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem7);
+
+        jMenuItem8.setText("Show known hosts");
+        jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showKnownHosts(evt);
+            }
+        });
+        jMenu1.add(jMenuItem8);
 
         jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.META_MASK));
         jMenuItem1.setText("Quit");
@@ -378,6 +387,11 @@ public class MainWindow extends javax.swing.JFrame {
         copyStatus.setVisible(true);
     }//GEN-LAST:event_showCopyStatus
 
+    private void showKnownHosts(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showKnownHosts
+        HostsSelector hosts = new HostsSelector(this, true,false);
+        hosts.setVisible(true);
+    }//GEN-LAST:event_showKnownHosts
+
     /**
      * @param args the command line arguments
      */
@@ -432,6 +446,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
+    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel networkPanel;
