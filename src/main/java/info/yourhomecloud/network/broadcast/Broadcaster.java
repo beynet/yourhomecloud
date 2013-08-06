@@ -21,7 +21,7 @@ public class Broadcaster extends Thread {
     }
 
     private void sendMessage(byte[] buf, InetAddress broadCastAdress) {
-        logger.debug("sending broadcast packet to " + broadCastAdress.getHostAddress() + " port=" + port);
+        logger.trace("sending broadcast packet to " + broadCastAdress.getHostAddress() + " port=" + port);
         DatagramPacket packet = new DatagramPacket(buf, buf.length, broadCastAdress, port);
         try {
             this.socket.send(packet);
@@ -54,7 +54,7 @@ public class Broadcaster extends Thread {
                 break;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 logger.info("interruption detected");
                 break;

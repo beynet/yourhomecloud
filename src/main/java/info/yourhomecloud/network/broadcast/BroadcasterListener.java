@@ -15,7 +15,7 @@ public class BroadcasterListener implements Runnable {
         this.port = port;
         datagramSocket = new DatagramSocket(port);
         datagramSocket.setBroadcast(true);
-        datagramSocket.setSoTimeout(10 * 1000);
+        datagramSocket.setSoTimeout(3 * 1000);
     }
 
     @Override
