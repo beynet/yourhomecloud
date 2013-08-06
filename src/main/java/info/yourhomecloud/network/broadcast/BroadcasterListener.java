@@ -5,9 +5,6 @@ import info.yourhomecloud.network.NetworkUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 public class BroadcasterListener implements Runnable {
