@@ -10,13 +10,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractListModel;
-import javax.swing.DefaultListModel;
 
 /**
  *
  * @author beynet
  */
-public class HostsSelectorModel extends DefaultListModel<HostConfigurationBean> {
+public class HostsSelectorModel extends AbstractListModel<HostConfigurationBean> {
 
     private List<HostConfigurationBean> hosts;
     private final boolean connectedOnly;
@@ -57,15 +56,17 @@ public class HostsSelectorModel extends DefaultListModel<HostConfigurationBean> 
     }
 
     void refresh() {
-        removeAllElements();
+        if (hosts.size()!=0) fireIntervalRemoved(this, 0, hosts.size()-1);
         hosts = new ArrayList<>();
         for (HostConfigurationBean h : Configuration.getConfiguration().getOtherHosts()) {
             if (connectedOnly == true) {
                 if (h.getCurrentRMIAddress() != null) {
                     hosts.add(h);
+                    fireIntervalAdded(this, hosts.size()-1, hosts.size()-1);
                 }
             } else {
                 hosts.add(h);
+                fireIntervalAdded(this, hosts.size()-1, hosts.size()-1);
             }
         }
     }

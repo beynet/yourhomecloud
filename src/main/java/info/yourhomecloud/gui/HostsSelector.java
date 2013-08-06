@@ -44,9 +44,8 @@ public class HostsSelector extends javax.swing.JDialog {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ((HostsSelectorModel)jHostList.getModel()).refresh();
                     jHostList.setSelectedIndex(-1);
-                    jHostList.repaint();
+                    ((HostsSelectorModel)jHostList.getModel()).refresh();
                 }
             });
             
