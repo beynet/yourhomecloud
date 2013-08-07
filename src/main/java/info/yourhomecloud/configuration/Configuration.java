@@ -243,6 +243,7 @@ public class Configuration extends Observable {
                         logger.info("command to switch as main host send");
                         break;
                     } catch (Exception e) {
+                        logger.error("unable to send command",e);
                     }
                 }
             }

@@ -5,6 +5,7 @@ import info.yourhomecloud.network.NetworkUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import org.apache.log4j.Logger;
 
 public class BroadcasterListener implements Runnable {
@@ -13,7 +14,9 @@ public class BroadcasterListener implements Runnable {
 
     public BroadcasterListener(int port) throws IOException {
         this.port = port;
-        datagramSocket = new DatagramSocket(port);
+        datagramSocket = new DatagramSocket(null);
+        datagramSocket.setReuseAddress(true);
+        datagramSocket.bind(new InetSocketAddress(port));
         datagramSocket.setBroadcast(true);
         datagramSocket.setSoTimeout(3 * 1000);
     }
