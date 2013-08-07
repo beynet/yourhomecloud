@@ -30,7 +30,7 @@ public class BroadcasterListener implements Runnable {
             datagramSocket.close();
             logger.info("no message received - starting broadcaster thread");
             try {
-                new Broadcaster(port).start();
+                Broadcaster.startBroadcaster(port);
                 try {
                     Configuration.getConfiguration().setMainHostAndUpdateHostsList(null,0);
                 } catch (Exception ex) {

@@ -13,7 +13,19 @@ import org.apache.log4j.Logger;
 
 public class Broadcaster extends Thread {
 
-    public Broadcaster(int port) throws IOException {
+    private static Broadcaster _instance = null;
+
+    public static Broadcaster startBroadcaster(int port) throws IOException {
+        _instance = new Broadcaster(port);
+        _instance.start();
+        return _instance;
+    }
+
+    public static void stopBroadcaster() {
+        _instance.interrupt();
+    }
+
+    private Broadcaster(int port) throws IOException {
         this.socket = new DatagramSocket();
         this.socket.setBroadcast(true);
         this.port = port;

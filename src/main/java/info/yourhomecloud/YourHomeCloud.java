@@ -2,6 +2,7 @@ package info.yourhomecloud;
 
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.gui.MainWindow;
+import info.yourhomecloud.network.rmi.RMIUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,11 +36,12 @@ public class YourHomeCloud {
         }
         System.err.println(confPath.toString());
         Configuration.getConfiguration(confPath);
+        RMIUtils.getRMIUtils();
     }
 
     public static void main(String... args) throws InterruptedException {
         BasicConfigurator.configure();
-        Logger.getRootLogger().setLevel(Level.DEBUG);
+        Logger.getRootLogger().setLevel(Level.TRACE);
 
         // generate the configuration
         initConfiguration(args);

@@ -32,8 +32,7 @@ public class FirstTest extends RootTest {
     
     @Test
     public void testBroadcast() throws IOException, InterruptedException {
-        Broadcaster brThread = new Broadcaster(31003);
-        brThread.start();
+        Broadcaster brThread=Broadcaster.startBroadcaster(31003);
         DatagramSocket datagramSocket = new DatagramSocket(31003);
         byte[] buf = new byte[256];
         DatagramPacket p = new DatagramPacket(buf, buf.length);
@@ -49,7 +48,7 @@ public class FirstTest extends RootTest {
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         System.out.println("port read = "+port);
         assertThat(port, is(Integer.toString(RMIUtils.getRMIUtils().getPort())));
-        brThread.interrupt();
+        Broadcaster.stopBroadcaster();
         brThread.join();
     }
     

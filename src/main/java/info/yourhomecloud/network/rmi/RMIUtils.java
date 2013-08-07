@@ -40,12 +40,14 @@ public class RMIUtils {
         }
         try {
             logger.info("Creating rmi registry at port "+rmiPort);
+            logger.info("Check if the registry already exists "+rmiPort);
             registry = LocateRegistry.getRegistry(rmiPort);
             try {
                 if (registry!=null) UnicastRemoteObject.unexportObject(registry,true);
-            }catch(Exception e) {
-
+            } catch(Exception e) {
+                
             }
+            logger.info("create new registry "+rmiPort);
             registry = LocateRegistry.createRegistry(rmiPort);
             logger.info("registry created");
             storeObjects();
@@ -65,8 +67,8 @@ public class RMIUtils {
         FileUtils fuStub = (FileUtils) UnicastRemoteObject.exportObject(new FileUtilsImpl(),rmiPort);
         registry.rebind(FileUtils.class.getCanonicalName(), fuStub);
         
-        Configuration confStub = (Configuration) UnicastRemoteObject.exportObject(new ConfigurationImpl(),rmiPort);
-        registry.rebind(Configuration.class.getCanonicalName(), confStub);
+        RemoteConfiguration confStub = (RemoteConfiguration) UnicastRemoteObject.exportObject(new RemoteConfigurationImpl(),rmiPort);
+        registry.rebind(RemoteConfiguration.class.getCanonicalName(), confStub);
     }
 
     public static FileUtils getRemoteFileUtils(String host,int port) throws RemoteException, NotBoundException {
@@ -75,10 +77,10 @@ public class RMIUtils {
         return((FileUtils) registry.lookup(name));
     }
 
-    public static Configuration getRemoteConfiguration(String host,int port) throws RemoteException, NotBoundException {
-        String name = Configuration.class.getCanonicalName();
+    public static RemoteConfiguration getRemoteConfiguration(String host,int port) throws RemoteException, NotBoundException {
+        String name = RemoteConfiguration.class.getCanonicalName();
         Registry registry = LocateRegistry.getRegistry(host, port);
-        return((Configuration) registry.lookup(name));
+        return((RemoteConfiguration) registry.lookup(name));
     }
     
     public static RMIUtils getRMIUtils() {

@@ -34,14 +34,6 @@ public class ConfigurationBean {
         return otherHosts;
     }
     
-    public static Map<String,HostConfigurationBean> getHostsMapFromHostsList(List<HostConfigurationBean> otherHosts) {
-        Map<String,HostConfigurationBean> map = new HashMap<>();
-        for (HostConfigurationBean host : otherHosts) {
-            map.put(host.getHostKey(), host);
-        }
-        return map;
-    }
-    
 
     private HostConfigurationBean       localhost ;
     private List<HostConfigurationBean> otherHosts = new ArrayList<>();

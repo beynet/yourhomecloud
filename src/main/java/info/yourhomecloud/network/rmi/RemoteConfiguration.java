@@ -1,6 +1,7 @@
 package info.yourhomecloud.network.rmi;
 
 import info.yourhomecloud.configuration.HostConfigurationBean;
+import java.io.IOException;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -9,7 +10,7 @@ import java.util.List;
  * provides methos to update a remote host configuration.
  * @author beynet
  */
-public interface Configuration extends Remote {
+public interface RemoteConfiguration extends Remote {
     
     /**
      * update remote host configuration.This method is called folowing this sequence :
@@ -29,4 +30,12 @@ public interface Configuration extends Remote {
      * @throws RemoteException 
      */
     public void onExit(String hostKey) throws RemoteException;
+    
+    /**
+     * ask to the remote host to become the master host
+     * @throws RemoteException 
+     */
+    public void becomeMainHostAndMarkPreviousAsDisconnected() throws IOException,RemoteException;
+    
+    public void mainHostAsChanged() throws IOException,RemoteException;
 }

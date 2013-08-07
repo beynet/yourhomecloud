@@ -29,10 +29,10 @@ public final class NetworkStatus extends JTextArea {
     }
 
     public void updateMainHost() {
-        if (Configuration.getConfiguration().getMainHost() == null) {
+        if (Configuration.getConfiguration().isMainHost() == true) {
             mainHostLine = "Current instance is the master instance";
         } else {
-            mainHostLine = "Master host ip=" + Configuration.getConfiguration().getMainHost();
+            mainHostLine = "Master host ip=" + Configuration.getConfiguration().getMainHostRMIAddr();
         }
     }
 
