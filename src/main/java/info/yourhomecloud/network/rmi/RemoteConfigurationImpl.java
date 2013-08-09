@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import java.rmi.RemoteException;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 public class RemoteConfigurationImpl implements RemoteConfiguration {
 
@@ -31,8 +32,15 @@ public class RemoteConfigurationImpl implements RemoteConfiguration {
 
     @Override
     public void mainHostAsChanged() throws RemoteException, IOException {
-        final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
-        final Thread thread = new Thread(broadcasterListener);
-        thread.start();
+        try {
+            final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
+            final Thread thread = new Thread(broadcasterListener);
+            thread.start();
+        } catch (IOException e) {
+            logger.error("IO error", e);
+            throw e;
+        }
     }
+    
+    private final static Logger logger = Logger.getLogger(RemoteConfigurationImpl.class);
 }

@@ -29,7 +29,7 @@ public class HostsSelectorModel extends AbstractListModel<HostConfigurationBean>
     public HostsSelectorModel(boolean connectedOnly) {
         this.connectedOnly = connectedOnly;
         hosts = new ArrayList<>();
-        for (HostConfigurationBean h : Configuration.getConfiguration().getOtherHosts()) {
+        for (HostConfigurationBean h : Configuration.getConfiguration().getOtherHostsSnapshot()) {
             if (connectedOnly == true) {
                 if (h.getCurrentRMIAddress() != null) {
                     hosts.add(h);
@@ -58,7 +58,7 @@ public class HostsSelectorModel extends AbstractListModel<HostConfigurationBean>
     void refresh() {
         if (hosts.size()!=0) fireIntervalRemoved(this, 0, hosts.size()-1);
         hosts = new ArrayList<>();
-        for (HostConfigurationBean h : Configuration.getConfiguration().getOtherHosts()) {
+        for (HostConfigurationBean h : Configuration.getConfiguration().getOtherHostsSnapshot()) {
             if (connectedOnly == true) {
                 if (h.getCurrentRMIAddress() != null) {
                     hosts.add(h);

@@ -13,13 +13,11 @@ import java.nio.file.Path;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.UUID;
-import java.util.logging.Level;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -51,6 +49,7 @@ public class Configuration extends Observable {
             throw new IllegalArgumentException("File " + configDirectory + " is not a directory");
         }
         readConfiguration();
+        rwLock = new ReentrantReadWriteLock();
     }
 
     /**
@@ -153,10 +152,15 @@ public class Configuration extends Observable {
      * @param i
      */
     public void setNetworkInterface(String i) {
-        configuration.getLocalhost().setNetworkInterface(i);
-        configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
-        // FIXME : restart services
-        saveConfiguration(Change.NETWORK_INTERFACE);
+        rwLock.writeLock().lock();
+        try {
+            configuration.getLocalhost().setNetworkInterface(i);
+            configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
+            // FIXME : restart services
+            saveConfiguration(Change.NETWORK_INTERFACE);
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -165,11 +169,16 @@ public class Configuration extends Observable {
      * @param dir
      */
     public void addDirectoryToBeSaved(Path dir) {
-        dir = dir.toAbsolutePath().normalize();
-        if (!configuration.getLocalhost().getDirectoriesToBeSaved().contains(dir.toString())) {
-            configuration.getLocalhost().getDirectoriesToBeSaved().add(dir.toString());
-            configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
-            saveConfiguration(Change.DIRECTORIES_TO_BE_SAVED);
+        rwLock.writeLock().lock();
+        try {
+            dir = dir.toAbsolutePath().normalize();
+            if (!configuration.getLocalhost().getDirectoriesToBeSaved().contains(dir.toString())) {
+                configuration.getLocalhost().getDirectoriesToBeSaved().add(dir.toString());
+                configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
+                saveConfiguration(Change.DIRECTORIES_TO_BE_SAVED);
+            }
+        } finally {
+            rwLock.writeLock().unlock();
         }
     }
 
@@ -179,12 +188,17 @@ public class Configuration extends Observable {
      * @param dir
      */
     public void removeDirectoryToBeSaved(Path dir) {
-        dir = dir.toAbsolutePath().normalize();
-        String toString = dir.toString();
-        if (configuration.getLocalhost().getDirectoriesToBeSaved().contains(toString)) {
-            configuration.getLocalhost().getDirectoriesToBeSaved().remove(toString);
-            configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
-            saveConfiguration(Change.DIRECTORIES_TO_BE_SAVED);
+        rwLock.writeLock().lock();
+        try {
+            dir = dir.toAbsolutePath().normalize();
+            String toString = dir.toString();
+            if (configuration.getLocalhost().getDirectoriesToBeSaved().contains(toString)) {
+                configuration.getLocalhost().getDirectoriesToBeSaved().remove(toString);
+                configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
+                saveConfiguration(Change.DIRECTORIES_TO_BE_SAVED);
+            }
+        } finally {
+            rwLock.writeLock().unlock();
         }
     }
 
@@ -205,20 +219,19 @@ public class Configuration extends Observable {
         }
         this.mainHostRMIAddr = hostAddr;
         this.mainHostRmiPort = rmiPort;
-        RMIUtils.getRMIUtils();
+        
         logger.info("register main host " + mainHostRMIAddr + " port = " + this.mainHostRmiPort);
 
         // prepare list of know hosts
         // including current host
         // ---------------------------
-        List<HostConfigurationBean> hosts = new ArrayList<>();
-        hosts.addAll(configuration.getOtherHosts());
-        hosts.add(configuration.getLocalhost());
+        List<HostConfigurationBean> hosts = getOtherHostsSnapshot();
+        hosts.add(configuration.getLocalhost().clone());
         // retrieve remote object
         info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(hostAddr, rmiPort);
         // send hosts to main host - in result receive the host list from main host
         List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts, configuration.getLocalhost());
-
+        logger.info("local config send to main host");
         updateOtherHostsConfiguration(updateHosts, configuration.getLocalhost());
     }
 
@@ -235,7 +248,9 @@ public class Configuration extends Observable {
             // stop the broadcaster service
             // ----------------------------
             Broadcaster.stopBroadcaster();
-            for (HostConfigurationBean host : Configuration.getConfiguration().getOtherHosts()) {
+            List<HostConfigurationBean> hosts = getOtherHostsSnapshot();
+            
+            for (HostConfigurationBean host : hosts) {
                 if (host.getCurrentRMIAddress() != null) {
                     info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(host.getCurrentRMIAddress(), host.getCurrentRMIPort());
                     try {
@@ -243,7 +258,7 @@ public class Configuration extends Observable {
                         logger.info("command to switch as main host send");
                         break;
                     } catch (Exception e) {
-                        logger.error("unable to send command",e);
+                        logger.error("unable to send command to host="+host.getHostName()+" addr="+host.getCurrentRMIAddress()+" port="+host.getCurrentRMIPort(), e);
                     }
                 }
             }
@@ -281,8 +296,28 @@ public class Configuration extends Observable {
         return _configuration;
     }
 
-    public List<HostConfigurationBean> getOtherHosts() {
+    /**
+     * @return other hosts list : modifications done on this list will be
+     * reflected on the configuration
+     */
+    private List<HostConfigurationBean> getOtherHosts() {
         return configuration.getOtherHosts();
+    }
+    
+    /**
+     * @return a copy of configured host list
+     */
+    public List<HostConfigurationBean> getOtherHostsSnapshot() {
+        List<HostConfigurationBean> result = new ArrayList<>();
+        rwLock.readLock().lock();
+        try {
+            for (HostConfigurationBean h : getOtherHosts()) {
+                result.add(h.clone());
+            }
+            return result;
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     /**
@@ -292,85 +327,76 @@ public class Configuration extends Observable {
         return configuration.getLocalhost().getHostKey();
     }
 
+    /**
+     * @return current host name
+     */
     public String getCurrentHostName() {
         return configuration.getLocalhost().getHostName();
     }
 
+    /**
+     * change current host name
+     * @param name 
+     */
     public void setCurrentHostName(String name) {
-        configuration.getLocalhost().setHostName(name);
-        configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
-        saveConfiguration(Change.HOSTNAME);
-    }
-
-    public List<String> getDirectoriesToBeSaved() {
-        return configuration.getLocalhost().getDirectoriesToBeSaved();
-    }
-
-    public static Map<String, HostConfigurationBean> getHostsMapFromHostsList(List<HostConfigurationBean> otherHosts) {
-        Map<String, HostConfigurationBean> map = new HashMap<>();
-        for (HostConfigurationBean host : otherHosts) {
-            map.put(host.getHostKey(), host);
+        rwLock.writeLock().lock();
+        try {
+            configuration.getLocalhost().setHostName(name);
+            configuration.getLocalhost().setLastUpdateDate(System.currentTimeMillis());
+            saveConfiguration(Change.HOSTNAME);
+        } finally {
+            rwLock.writeLock().unlock();
         }
-        return map;
     }
 
     /**
-     * update host list with a list received from another host
+     * @return the list of directories configured to be backuped
+     */
+    public List<String> getDirectoriesToBeSavedSnapshot() {
+        List<String> directories = new ArrayList<>();
+        rwLock.readLock().lock();
+        try {
+            directories.addAll(configuration.getLocalhost().getDirectoriesToBeSaved());
+            return directories;
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
+    /**
+     * update host list with a list received from another host (updater)
      *
      * @param update
-     * @param newHost : host from which the modification was received
+     * @param updater : host from which the modification was received
      * @return
      */
-    public synchronized List<HostConfigurationBean> updateOtherHostsConfiguration(List<HostConfigurationBean> update, HostConfigurationBean newHost) {
-        Map<String, HostConfigurationBean> newHostsMap = Configuration.getHostsMapFromHostsList(update);
-        Map<String, HostConfigurationBean> currentHostsMap = Configuration.getHostsMapFromHostsList(configuration.getOtherHosts());
-
-        for (Entry<String, HostConfigurationBean> entry : newHostsMap.entrySet()) {
-            HostConfigurationBean newConf = entry.getValue();
-            // we nether update current host configuration
-            if (configuration.getLocalhost().getHostKey().equals(newConf.getHostKey())) {
-                continue;
-            }
-            HostConfigurationBean currentConf = currentHostsMap.get(entry.getKey());
-            if (currentConf == null) {
-                currentHostsMap.put(entry.getKey(), newConf);
-            } else {
-                if (currentConf.getLastUpdateDate() == null) {
-                    currentConf.setLastUpdateDate(Long.valueOf(0));
-                }
-                if (newConf.getLastUpdateDate() == null) {
-                    newConf.setLastUpdateDate(Long.valueOf(0));
-                }
-                if (currentConf.getLastUpdateDate().compareTo(newConf.getLastUpdateDate()) == 0) {
-                    if (currentConf.getCurrentRMIAddress() == null) {
-                        currentConf.setCurrentRMIAddress(newConf.getCurrentRMIAddress());
-                        currentConf.setCurrentRMIPort(newConf.getCurrentRMIPort());
-                    }
-                }
-                if (currentConf.getLastUpdateDate().compareTo(newConf.getLastUpdateDate()) < 0) {
-                    currentHostsMap.put(entry.getKey(), newConf);
-                }
-            }
-        }
-        configuration.getOtherHosts().clear();
-        configuration.getOtherHosts().addAll(currentHostsMap.values());
-        saveConfiguration(Change.OTHER_HOSTS);
+    public List<HostConfigurationBean> updateOtherHostsConfiguration(List<HostConfigurationBean> update, HostConfigurationBean updater) {
+        String currentHostKey = null;
         List<HostConfigurationBean> results = new ArrayList<>();
-        results.add(configuration.getLocalhost());
-        results.addAll(configuration.getOtherHosts());
-
-        // main host send host configuration modification all hosts
+        rwLock.writeLock().lock();
+        try {
+            currentHostKey = configuration.getLocalhost().getHostKey();
+            configuration.updateHostList(update, updater);
+            saveConfiguration(Change.OTHER_HOSTS);
+            results.add(configuration.getLocalhost().clone());
+            for (HostConfigurationBean h : getOtherHosts()) {
+                results.add(h.clone());
+            }
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+        // main host  forward the configuration received to all hosts
         // except to the host from which the modification was received
         // -----------------------------------------------------------
         if (isMainHost() == true) {
             // notify other hosts
-            for (HostConfigurationBean bean : configuration.getOtherHosts()) {
-                if (!newHost.getHostKey().equals(bean.getHostKey())) {
+            for (HostConfigurationBean bean : results) {
+                if (!updater.getHostKey().equals(bean.getHostKey()) && !currentHostKey.equals(bean.getHostKey())) {
                     if (bean.getCurrentRMIAddress() != null) {
                         info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration;
                         try {
                             remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
-                            remoteConfiguration.updateHosts(results, newHost);
+                            remoteConfiguration.updateHosts(results, updater);
                         } catch (Exception ex) {
                             logger.error("unable to send update to host", ex);
                         }
@@ -380,13 +406,19 @@ public class Configuration extends Observable {
         }
 
         return results;
+
     }
 
     /**
      * clear the list of know hosts
      */
     protected void clearOtherHostsConfiguration() {
-        configuration.getOtherHosts().clear();
+        rwLock.writeLock().lock();
+        try {
+            getOtherHosts().clear();
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -399,46 +431,23 @@ public class Configuration extends Observable {
         if (hostKey == null) {
             return;
         }
-        List<HostConfigurationBean> otherHosts = configuration.getOtherHosts();
-        HostConfigurationBean found = null;
-        for (HostConfigurationBean toRemove : otherHosts) {
-            if (hostKey.equals(toRemove.getHostKey())) {
-                found = toRemove;
-                break;
-            }
-        }
-
-//        
-        Path resolve = getConfigurationPath().resolve(found.getHostKey());
-        if (Files.exists(resolve)) {
-            System.err.println(resolve);
-            Files.walkFileTree(resolve, new DeleteFilesVisitor());
-        }
-
-        otherHosts.remove(found);
-        saveConfiguration(Change.OTHER_HOSTS);
-    }
-
-    protected ConfigurationBean getConfigurationBean() {
-        return configuration;
-    }
-    //    public void add
-    private Path configDirectory;
-    private String mainHostRMIAddr;
-    private int mainHostRmiPort;
-    private ConfigurationBean configuration;
-    // JAXB configuration
-    private final static JAXBContext context;
-
-    static {
+        rwLock.writeLock().lock();
         try {
-            context = JAXBContext.newInstance(ConfigurationBean.class);
-        } catch (JAXBException e) {
-            throw new RuntimeException("unable to generate jaxb context for configuration", e);
+            HostConfigurationBean found = configuration.removeHost(hostKey);
+            if (found == null) {
+                return;
+            }
+//        
+            Path resolve = getConfigurationPath().resolve(found.getHostKey());
+            if (Files.exists(resolve)) {
+                System.err.println(resolve);
+                Files.walkFileTree(resolve, new DeleteFilesVisitor());
+            }
+            saveConfiguration(Change.OTHER_HOSTS);
+        } finally {
+            rwLock.writeLock().unlock();
         }
     }
-    private static Configuration _configuration = null;
-    private static final Logger logger = Logger.getLogger(Configuration.class);
 
     public void setCurrentRMIAddress(String address) {
         configuration.getLocalhost().setCurrentRMIAddress(address);
@@ -457,22 +466,30 @@ public class Configuration extends Observable {
      * @param hostKey
      */
     public void onExit(String hostKey) {
-
-        for (HostConfigurationBean bean : configuration.getOtherHosts()) {
-            if (hostKey.equals(bean.getHostKey())) {
-                bean.setCurrentRMIAddress(null);
-                saveConfiguration(Change.OTHER_HOSTS);
-                break;
+        List<HostConfigurationBean> hosts = null;
+        rwLock.writeLock().lock();
+        try {
+            for (HostConfigurationBean bean : getOtherHosts()) {
+                if (hostKey.equals(bean.getHostKey())) {
+                    bean.setCurrentRMIAddress(null);
+                    bean.setLastUpdateDate(System.currentTimeMillis());
+                    saveConfiguration(Change.OTHER_HOSTS);
+                    break;
+                }
             }
+            hosts = getOtherHostsSnapshot();
+        } finally {
+            rwLock.writeLock().unlock();
         }
         // exit if current host is not the main host
         // -----------------------------------------
         if (isMainHost() != true) {
             return;
         }
+        
         // we notify other hosts if we are the main host
         // ---------------------------------------------
-        for (HostConfigurationBean bean : configuration.getOtherHosts()) {
+        for (HostConfigurationBean bean : hosts) {
             if (!hostKey.equals(bean.getHostKey())) {
                 if (bean.getCurrentRMIAddress() != null) {
                     info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration;
@@ -491,33 +508,41 @@ public class Configuration extends Observable {
      * current host become the main host
      */
     public void becomeMainHostAndMarkPreviousAsDisconnected() throws IOException {
-        String previousMainHost = getMainHostRMIAddr();
-        int previousPort = getMainHostRMIPort();
-        setMainHost();
-        Broadcaster.startBroadcaster(NetworkUtils.DEFAULT_BROADCAST_PORT);
-        saveConfiguration(Change.MAIN_HOST);
-        
-        // one loop to remove previous main host
-        // ------------------------------------
-        for (HostConfigurationBean host : getOtherHosts()) {
-            if (previousMainHost.equals(host.getCurrentRMIAddress()) && previousPort == host.getCurrentRMIPort()) {
-                host.setCurrentRMIAddress(null);
-                host.setCurrentRMIPort(0);
-                host.setLastUpdateDate(System.currentTimeMillis());
-                saveConfiguration(Change.OTHER_HOSTS);
-            }
-        }
-        // notify connected hosts
-        // ----------------------
-        logger.debug("notify hosts that main I'm the new main host");
-        for (HostConfigurationBean host : getOtherHosts()) {
-            if (host.getCurrentRMIAddress() != null) {
-                logger.debug("notify host "+host.getHostKey()+" that main I'm the new main host");
-                try {
-                    RMIUtils.getRemoteConfiguration(host.getCurrentRMIAddress(), host.getCurrentRMIPort()).mainHostAsChanged();
-                } catch (NotBoundException ex) {
+        rwLock.writeLock().lock();
+        try {
+            String previousMainHost = getMainHostRMIAddr();
+            int previousPort = getMainHostRMIPort();
+            setMainHost();
+            Broadcaster.startBroadcaster(NetworkUtils.DEFAULT_BROADCAST_PORT);
+            saveConfiguration(Change.MAIN_HOST);
+
+            // one loop to remove previous main host
+            // ------------------------------------
+            for (HostConfigurationBean host : getOtherHosts()) {
+                if (previousMainHost.equals(host.getCurrentRMIAddress()) && previousPort == host.getCurrentRMIPort()) {
+                    host.setCurrentRMIAddress(null);
+                    host.setCurrentRMIPort(0);
+                    host.setLastUpdateDate(System.currentTimeMillis());
+                    saveConfiguration(Change.OTHER_HOSTS);
                 }
             }
+            // notify connected hosts
+            // ----------------------
+            logger.debug("notify hosts that I'm the new main host");
+            for (HostConfigurationBean host : getOtherHosts()) {
+                if (host.getCurrentRMIAddress() != null) {
+                    logger.debug("notify host " + host.getHostKey() + " that I'm the new main host");
+                    try {
+                        RMIUtils.getRemoteConfiguration(host.getCurrentRMIAddress(), host.getCurrentRMIPort()).mainHostAsChanged();
+                    } catch (NotBoundException e) {
+                        logger.error("not bound exception when sending manHostAsChanged to host",e);
+                    } catch(IOException e) {
+                        logger.error("error sending host changed - port="+host.getCurrentRMIPort()+" address "+host.getCurrentRMIAddress(),e);
+                    }
+                }
+            }
+        } finally {
+            rwLock.writeLock().unlock();
         }
     }
 
@@ -529,4 +554,22 @@ public class Configuration extends Observable {
         DIRECTORIES_TO_BE_SAVED,
         OTHER_HOSTS, HOSTNAME,
     }
+    //    public void add
+    private Path configDirectory;
+    private String mainHostRMIAddr;
+    private int mainHostRmiPort;
+    private ConfigurationBean configuration;
+    private ReadWriteLock rwLock;
+    // JAXB configuration
+    private final static JAXBContext context;
+
+    static {
+        try {
+            context = JAXBContext.newInstance(ConfigurationBean.class);
+        } catch (JAXBException e) {
+            throw new RuntimeException("unable to generate jaxb context for configuration", e);
+        }
+    }
+    private static Configuration _configuration = null;
+    private static final Logger logger = Logger.getLogger(Configuration.class);
 }

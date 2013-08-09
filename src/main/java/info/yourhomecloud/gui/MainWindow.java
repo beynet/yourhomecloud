@@ -347,7 +347,7 @@ public class MainWindow extends javax.swing.JFrame {
         new Thread() {
             @Override
             public void run() {
-                for (String dir : Configuration.getConfiguration().getDirectoriesToBeSaved()) {
+                for (String dir : Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot()) {
                     try {
                         fs.sync(Paths.get(dir), targetHost,copyStatus);
                     } catch (Exception ex) {

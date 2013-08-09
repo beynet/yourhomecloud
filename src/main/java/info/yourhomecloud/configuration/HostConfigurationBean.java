@@ -3,6 +3,7 @@ package info.yourhomecloud.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -16,9 +17,6 @@ public class HostConfigurationBean implements Serializable{
     public String toString() {
         return "name="+getHostName()+" key="+getHostKey();
     }
-    
-    
-    
     
     /**
      * 
@@ -34,8 +32,6 @@ public class HostConfigurationBean implements Serializable{
     public void setHostKey(String hostKey) {
         this.hostKey = hostKey;
     }
-    
-    
     
     @XmlAttribute(name="lastUdateDate")
     public Long getLastUpdateDate() {
@@ -85,6 +81,66 @@ public class HostConfigurationBean implements Serializable{
     public void setCurrentRMIPort(int currentRmiPort) {
         this.currentRMIPort = currentRmiPort;
     }
+
+    @Override
+    protected HostConfigurationBean clone() {
+        HostConfigurationBean result = new HostConfigurationBean();
+        result.setCurrentRMIAddress(this.getCurrentRMIAddress());
+        result.setCurrentRMIPort(this.getCurrentRMIPort());
+        result.setNetworkInterface(this.getNetworkInterface());
+        result.setHostKey(this.getHostKey());
+        result.setHostName(this.getHostName());
+        result.setLastUpdateDate(this.getLastUpdateDate());
+        result.directoriesToBeSaved.addAll(this.getDirectoriesToBeSaved());
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.currentRMIAddress);
+        hash = 17 * hash + this.currentRMIPort;
+        hash = 17 * hash + Objects.hashCode(this.networkInterface);
+        hash = 17 * hash + Objects.hashCode(this.hostKey);
+        hash = 17 * hash + Objects.hashCode(this.hostName);
+        hash = 17 * hash + Objects.hashCode(this.lastUpdateDate);
+        hash = 17 * hash + Objects.hashCode(this.directoriesToBeSaved);
+        return hash; 
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HostConfigurationBean other = (HostConfigurationBean) obj;
+        if (!Objects.equals(this.currentRMIAddress, other.currentRMIAddress)) {
+            return false;
+        }
+        if (this.currentRMIPort != other.currentRMIPort) {
+            return false;
+        }
+        if (!Objects.equals(this.networkInterface, other.networkInterface)) {
+            return false;
+        }
+        if (!Objects.equals(this.hostKey, other.hostKey)) {
+            return false;
+        }
+        if (!Objects.equals(this.hostName, other.hostName)) {
+            return false;
+        }
+        if (!Objects.equals(this.lastUpdateDate, other.lastUpdateDate)) {
+            return false;
+        }
+        if (!Objects.equals(this.directoriesToBeSaved, other.directoriesToBeSaved)) {
+            return false;
+        }
+        return true;
+    }
+    
     
     private String currentRMIAddress;
     private int currentRMIPort ;
