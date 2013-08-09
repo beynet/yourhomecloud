@@ -64,10 +64,12 @@ public class RMIUtils {
     }
 
     private void storeObjects() throws RemoteException {
-        FileUtils fuStub = (FileUtils) UnicastRemoteObject.exportObject(new FileUtilsImpl(),rmiPort);
+        fUtils = new FileUtilsImpl();
+        FileUtils fuStub = (FileUtils) UnicastRemoteObject.exportObject(fUtils,rmiPort);
         registry.rebind(FileUtils.class.getCanonicalName(), fuStub);
         
-        RemoteConfiguration confStub = (RemoteConfiguration) UnicastRemoteObject.exportObject(new RemoteConfigurationImpl(),rmiPort);
+        rConfig = new RemoteConfigurationImpl();
+        RemoteConfiguration confStub = (RemoteConfiguration) UnicastRemoteObject.exportObject(rConfig,rmiPort);
         registry.rebind(RemoteConfiguration.class.getCanonicalName(), confStub);
     }
 
@@ -96,4 +98,7 @@ public class RMIUtils {
 
     private final static Logger logger = Logger.getLogger(RMIUtils.class);
     private  static RMIUtils _rmiUtils = null;
+    private static FileUtils fUtils;
+    private static RemoteConfiguration rConfig;
+    
 }
