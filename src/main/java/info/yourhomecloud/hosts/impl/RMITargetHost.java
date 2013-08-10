@@ -21,9 +21,9 @@ public class RMITargetHost implements TargetHost {
 
     FileUtils fileUtils;
 
-    public RMITargetHost(String host, int port) throws IOException {
+    public RMITargetHost(String hostKey,String host, int port) throws IOException {
         try {
-            fileUtils = RMIUtils.getRemoteFileUtils(host, port);
+            fileUtils = RMIUtils.getRemoteFileUtils(hostKey,host, port);
         } catch (RemoteException | NotBoundException ex) {
             throw new IOException("unable to obtain remote object", ex);
         }

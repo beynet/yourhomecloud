@@ -1,6 +1,7 @@
 package info.yourhomecloud.files;
 
 import info.yourhomecloud.RootTest;
+import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.files.impl.FileSyncerImpl;
 import info.yourhomecloud.hosts.impl.LocalTargetHost;
 import info.yourhomecloud.hosts.impl.RMITargetHost;
@@ -36,6 +37,6 @@ public class FilesSyncTest extends RootTest{
     @Test
     public void remoteCopy() throws IOException, NotBoundException {
         FileSyncerImpl fs = new FileSyncerImpl();
-        fs.sync(Paths.get("/Users/beynet/Desktop"), new RMITargetHost("127.0.0.1", RMIUtils.getRMIUtils().getPort()));
+        fs.sync(Paths.get("/Users/beynet/Desktop"), new RMITargetHost(Configuration.getConfiguration().getCurrentHostKey(),"127.0.0.1", RMIUtils.getRMIUtils().getPort()));
     }
 }

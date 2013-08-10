@@ -37,5 +37,11 @@ public interface RemoteConfiguration extends Remote {
      */
     public void becomeMainHostAndMarkPreviousAsDisconnected() throws IOException,RemoteException;
     
+    /**
+     * ask to peer to recompute the main host because
+     * main host is disconnected
+     * @throws IOException
+     * @throws RemoteException 
+     */
     public void mainHostAsChanged() throws IOException,RemoteException;
 }

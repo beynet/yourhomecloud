@@ -4,6 +4,7 @@ import info.yourhomecloud.files.impl.DeleteFilesVisitor;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.Broadcaster;
 import info.yourhomecloud.network.rmi.RMIUtils;
+import info.yourhomecloud.network.rmi.RemoteConfiguration;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -18,6 +19,7 @@ import java.util.Observable;
 import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -35,6 +37,38 @@ import org.apache.log4j.Logger;
 public class Configuration extends Observable {
 
     private boolean mainHost;
+
+    public static void markHostAsDisconnected(final String hostKey) {
+        if (hostKey != null) {
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    Configuration configuration = Configuration.getConfiguration();
+                    // main host detect an host error
+                    if (configuration.isMainHost()) {
+                        configuration.onExit(hostKey);
+                    } else {
+                        if (hostKey.equals(configuration.mainHostKey)) {
+                            try {
+                                configuration.becomeMainHostAndMarkPreviousAsDisconnected();
+                            } catch (IOException ex) {
+                                logger.error("unable to become a main host",ex);
+                            }
+                        }
+                        else {
+                            try {
+                                RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(configuration.mainHostKey, configuration.mainHostRMIAddr, configuration.mainHostRmiPort);
+                                remoteConfiguration.onExit(hostKey);
+                            } catch (Exception e) {
+                                logger.error("unable to propagate host terminaison to main host");
+                            }
+                        }
+                    }
+                }
+            };
+            new Thread(r).start();
+        }
+    }
 
     /**
      * @param configDirectory : must be a directory
@@ -67,6 +101,7 @@ public class Configuration extends Observable {
         mainHost = true;
         mainHostRMIAddr = null;
         mainHostRmiPort = 0;
+        mainHostKey = null;
     }
 
     /**
@@ -219,7 +254,7 @@ public class Configuration extends Observable {
         }
         this.mainHostRMIAddr = hostAddr;
         this.mainHostRmiPort = rmiPort;
-        
+
         logger.info("register main host " + mainHostRMIAddr + " port = " + this.mainHostRmiPort);
 
         // prepare list of know hosts
@@ -228,11 +263,19 @@ public class Configuration extends Observable {
         List<HostConfigurationBean> hosts = getOtherHostsSnapshot();
         hosts.add(configuration.getLocalhost().clone());
         // retrieve remote object
-        info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(hostAddr, rmiPort);
+        info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(null, hostAddr, rmiPort);
         // send hosts to main host - in result receive the host list from main host
         List<HostConfigurationBean> updateHosts = remoteConfiguration.updateHosts(hosts, configuration.getLocalhost());
         logger.info("local config send to main host");
         updateOtherHostsConfiguration(updateHosts, configuration.getLocalhost());
+        List<HostConfigurationBean> otherHostsSnapshot = getOtherHostsSnapshot();
+        for (HostConfigurationBean host : otherHostsSnapshot) {
+            if (this.mainHostRMIAddr.equals(host.getCurrentRMIAddress())
+                    && this.mainHostRmiPort == host.getCurrentRMIPort()) {
+                this.mainHostKey = host.getHostKey();
+                break;
+            }
+        }
     }
 
     /**
@@ -249,21 +292,21 @@ public class Configuration extends Observable {
             // ----------------------------
             Broadcaster.stopBroadcaster();
             List<HostConfigurationBean> hosts = getOtherHostsSnapshot();
-            
+
             for (HostConfigurationBean host : hosts) {
                 if (host.getCurrentRMIAddress() != null) {
-                    info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+                    info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort());
                     try {
                         remoteConfiguration.becomeMainHostAndMarkPreviousAsDisconnected();
                         logger.info("command to switch as main host send");
                         break;
                     } catch (Exception e) {
-                        logger.error("unable to send command to host="+host.getHostName()+" addr="+host.getCurrentRMIAddress()+" port="+host.getCurrentRMIPort(), e);
+                        logger.error("unable to send command to host=" + host.getHostName() + " addr=" + host.getCurrentRMIAddress() + " port=" + host.getCurrentRMIPort(), e);
                     }
                 }
             }
         } else if (this.mainHostRMIAddr != null) {
-            info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(this.mainHostRMIAddr, this.mainHostRmiPort);
+            info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration = RMIUtils.getRemoteConfiguration(this.mainHostKey, this.mainHostRMIAddr, this.mainHostRmiPort);
             remoteConfiguration.onExit(getCurrentHostKey());
         }
     }
@@ -303,7 +346,7 @@ public class Configuration extends Observable {
     private List<HostConfigurationBean> getOtherHosts() {
         return configuration.getOtherHosts();
     }
-    
+
     /**
      * @return a copy of configured host list
      */
@@ -336,7 +379,8 @@ public class Configuration extends Observable {
 
     /**
      * change current host name
-     * @param name 
+     *
+     * @param name
      */
     public void setCurrentHostName(String name) {
         rwLock.writeLock().lock();
@@ -395,7 +439,7 @@ public class Configuration extends Observable {
                     if (bean.getCurrentRMIAddress() != null) {
                         info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration;
                         try {
-                            remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
+                            remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getHostKey(), bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
                             remoteConfiguration.updateHosts(results, updater);
                         } catch (Exception ex) {
                             logger.error("unable to send update to host", ex);
@@ -486,7 +530,7 @@ public class Configuration extends Observable {
         if (isMainHost() != true) {
             return;
         }
-        
+
         // we notify other hosts if we are the main host
         // ---------------------------------------------
         for (HostConfigurationBean bean : hosts) {
@@ -494,7 +538,7 @@ public class Configuration extends Observable {
                 if (bean.getCurrentRMIAddress() != null) {
                     info.yourhomecloud.network.rmi.RemoteConfiguration remoteConfiguration;
                     try {
-                        remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
+                        remoteConfiguration = RMIUtils.getRemoteConfiguration(bean.getHostKey(), bean.getCurrentRMIAddress(), bean.getCurrentRMIPort());
                         remoteConfiguration.onExit(hostKey);
                     } catch (RemoteException | NotBoundException ex) {
                         logger.error("unable to send update to host", ex);
@@ -533,11 +577,11 @@ public class Configuration extends Observable {
                 if (host.getCurrentRMIAddress() != null) {
                     logger.debug("notify host " + host.getHostKey() + " that I'm the new main host");
                     try {
-                        RMIUtils.getRemoteConfiguration(host.getCurrentRMIAddress(), host.getCurrentRMIPort()).mainHostAsChanged();
+                        RMIUtils.getRemoteConfiguration(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort()).mainHostAsChanged();
                     } catch (NotBoundException e) {
-                        logger.error("not bound exception when sending manHostAsChanged to host",e);
-                    } catch(IOException e) {
-                        logger.error("error sending host changed - port="+host.getCurrentRMIPort()+" address "+host.getCurrentRMIAddress(),e);
+                        logger.error("not bound exception when sending manHostAsChanged to host", e);
+                    } catch (IOException e) {
+                        logger.error("error sending host changed - port=" + host.getCurrentRMIPort() + " address " + host.getCurrentRMIAddress(), e);
                     }
                 }
             }
@@ -558,6 +602,7 @@ public class Configuration extends Observable {
     private Path configDirectory;
     private String mainHostRMIAddr;
     private int mainHostRmiPort;
+    private String mainHostKey;
     private ConfigurationBean configuration;
     private ReadWriteLock rwLock;
     // JAXB configuration

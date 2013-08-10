@@ -19,8 +19,8 @@ public class TargetHostBuilder {
      * @return a targethost recheable by RMI
      * @throws IOException : if an error occured during stub obtention
      */
-    public static TargetHost createRMITargetHost(String host,int port) throws IOException {
-        return new RMITargetHost(host, port);
+    public static TargetHost createRMITargetHost(String hostKey,String host,int port) throws IOException {
+        return new RMITargetHost(hostKey,host, port);
     }
     
 }

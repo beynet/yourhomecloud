@@ -338,7 +338,7 @@ public class MainWindow extends javax.swing.JFrame {
         final FileSyncer fs = FileSyncerBuilder.createMonodirectionalFileSyncer();
         final TargetHost targetHost;
         try {
-            targetHost = TargetHostBuilder.createRMITargetHost(host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+            targetHost = TargetHostBuilder.createRMITargetHost(host.getHostKey(),host.getCurrentRMIAddress(), host.getCurrentRMIPort());
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "unable to obtain remote proxy error=" + ex.getMessage());
             return;
