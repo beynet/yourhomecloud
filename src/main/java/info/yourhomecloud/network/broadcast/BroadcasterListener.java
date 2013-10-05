@@ -46,10 +46,11 @@ public class BroadcasterListener implements Runnable {
         }
         datagramSocket.close();
         String messageString = new String(buf, 0, p.getLength());
-        logger.info("host from which broadcast was received " + p.getAddress().getHostAddress());
+        final String hostAddress = p.getAddress().getHostAddress();
+        logger.info("host from which broadcast was received " + hostAddress);
         String port = messageString.substring(NetworkUtils.BROADCAST_BEGIN.length());
         try {
-            Configuration.getConfiguration().setMainHostAndUpdateHostsList(p.getAddress().getHostAddress(), Integer.valueOf(port).intValue());
+            Configuration.getConfiguration().setMainHostAndUpdateHostsList(hostAddress, Integer.valueOf(port).intValue());
         } catch (Exception e) {
             logger.error("error updating main host", e);
         }

@@ -29,7 +29,6 @@ public class Broadcaster extends Thread {
         this.socket = new DatagramSocket();
         this.socket.setBroadcast(true);
         this.port = port;
-        this.broadCastAdress = NetworkUtils.getBroadcastAddresses();
     }
 
     private void sendMessage(byte[] buf, InetAddress broadCastAdress) {
@@ -76,6 +75,5 @@ public class Broadcaster extends Thread {
     }
     private DatagramSocket socket;
     private int port;
-    private List<InetAddress> broadCastAdress;
     private final static Logger logger = Logger.getLogger(Broadcaster.class);
 }
