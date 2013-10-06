@@ -63,6 +63,8 @@
         </plugins>
 		
     </build>
+    
+    
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -84,5 +86,12 @@
             <artifactId>swing-layout</artifactId>
             <version>1.0.3</version>
         </dependency>
+            <dependency>
+                <groupId>com.oracle</groupId>
+                <artifactId>javafx</artifactId>
+                <version>2.0</version>
+                <systemPath>${javafx.rt.jar}</systemPath>
+                <scope>system</scope>
+            </dependency>
     </dependencies>
 </project>

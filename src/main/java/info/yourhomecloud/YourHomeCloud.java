@@ -19,7 +19,7 @@ public class YourHomeCloud {
      *
      * @param args
      */
-    private static void initConfiguration(String... args) {
+    public static void initConfiguration(String... args) {
         final Path confPath;
         if (args == null || args.length < 1) {
             Path userHome = Paths.get((String)System.getProperty("user.home"));
@@ -65,6 +65,7 @@ public class YourHomeCloud {
         } catch (Exception ex) {
             logger.error("unable to send exit", ex);
         }
+        System.exit(0);
     }
     private final static Logger logger = Logger.getLogger(YourHomeCloud.class);
 }
