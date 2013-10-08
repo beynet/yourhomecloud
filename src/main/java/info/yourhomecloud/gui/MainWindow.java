@@ -4,7 +4,7 @@
  */
 package info.yourhomecloud.gui;
 
-import info.yourhomecloud.YourHomeCloud;
+import info.yourhomecloud.YourHomeCloudOld;
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.files.FileSyncer;
@@ -322,7 +322,6 @@ public class MainWindow extends javax.swing.JFrame {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Unable to start broadcast listener");
         }
-
     }//GEN-LAST:event_scanNetwork
 
     private void startSync(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startSync
@@ -373,7 +372,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_configureNetwork
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        YourHomeCloud.quitApplication();
+        YourHomeCloudOld.quitApplication();
     }//GEN-LAST:event_formWindowClosing
 
     private void changeHostName(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeHostName

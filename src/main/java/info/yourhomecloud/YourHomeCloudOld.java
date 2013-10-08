@@ -11,7 +11,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-public class YourHomeCloud {
+public class YourHomeCloudOld {
 
     /**
      * if a directory is provided use this directory for configuration if not
@@ -67,5 +67,5 @@ public class YourHomeCloud {
         }
         System.exit(0);
     }
-    private final static Logger logger = Logger.getLogger(YourHomeCloud.class);
+    private final static Logger logger = Logger.getLogger(YourHomeCloudOld.class);
 }

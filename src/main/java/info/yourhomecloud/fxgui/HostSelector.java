@@ -62,8 +62,8 @@ public class HostSelector extends DialogModal {
         bp.add(hostsListView, 1, 0,2,5);
         
         getRootGroup().getChildren().add(bp);
-        
-        if (allowRemove==true) {
+        this.allowRemove = allowRemove;
+        if (this.allowRemove==true) {
             hostsListView.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
                 @Override
@@ -109,6 +109,7 @@ public class HostSelector extends DialogModal {
     
     private void exit() {
         getParentStage().setOpacity(1);
+        Configuration.getConfiguration().deleteObserver(obs);
     }
     
     private ListView<HostConfigurationBean> hostsListView;

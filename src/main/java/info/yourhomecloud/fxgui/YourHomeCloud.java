@@ -4,40 +4,49 @@
  */
 package info.yourhomecloud.fxgui;
 
-import info.yourhomecloud.YourHomeCloud;
 import info.yourhomecloud.configuration.Configuration;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
+
+import info.yourhomecloud.network.NetworkUtils;
+import info.yourhomecloud.network.broadcast.BroadcasterListener;
+import info.yourhomecloud.network.rmi.RMIUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.MenuItemBuilder;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author beynet
  */
-public class MainFXApp extends Application {
+public class YourHomeCloud extends Application {
 
-    public MainFXApp() {
+    public YourHomeCloud() {
         Configuration.getConfiguration().addObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -88,7 +97,18 @@ public class MainFXApp extends Application {
 //                    ((NetworkStatus) networkStatus).generateText();
                 }
             });
-        } 
+        }
+        else if (Configuration.Change.MAIN_HOST.equals(change)) {
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ((NetworkStatus) networkStatus).updateMainHost();
+                    ((NetworkStatus) networkStatus).generateText();
+                    nst.updateNetworkStatus();
+                }
+            });
+        }
         
     }
 
@@ -116,7 +136,7 @@ public class MainFXApp extends Application {
     private void quitApp() {
         System.out.println("exiting !!!!!!!!!!");
         currentStage.close();
-        YourHomeCloud.quitApplication();
+        quitApplication();
     }
     
     
@@ -184,6 +204,25 @@ public class MainFXApp extends Application {
                 }
             });
         }
+
+        {
+            MenuItem scanNetwork = new MenuItem("scan network");
+            menu.getItems().add(scanNetwork);
+            scanNetwork.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    try {
+                        final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
+                        final Thread thread = new Thread(broadcasterListener);
+                        thread.start();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+
+        }
         
         
         // menu item to quit application
@@ -200,6 +239,12 @@ public class MainFXApp extends Application {
         borderPane.setTop(menuBar);
     }
 
+    
+    private void prepareNetworkStatus(BorderPane borderPane) {
+        nst = new NetworkShortStatus();
+        borderPane.setBottom(nst);
+    }
+    
     private void prepareContent(BorderPane borderPane) {
         // the hbox to contain the components
         VBox vbox = new VBox();
@@ -243,6 +288,10 @@ public class MainFXApp extends Application {
 
         // setup content
         prepareContent(borderPane);
+        
+        // add network status
+        prepareNetworkStatus(borderPane);
+        
         currentScene = new Scene(group, 640, 480);
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         primaryStage.setScene(currentScene);
@@ -254,11 +303,50 @@ public class MainFXApp extends Application {
         BasicConfigurator.configure();
 
         org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.TRACE);
-        YourHomeCloud.initConfiguration();
+        initConfiguration();
         launch(args);
     }
+
+    public static void quitApplication() {
+        try {
+            Configuration.getConfiguration().onExit();
+        } catch (Exception ex) {
+            logger.error("unable to send exit", ex);
+        }
+        System.exit(0);
+    }
+
+    /**
+     * if a directory is provided use this directory for configuration if not
+     * use environment standard
+     *
+     * @param args
+     */
+    public static void initConfiguration(String... args) {
+        final Path confPath;
+        if (args == null || args.length < 1) {
+            Path userHome = Paths.get((String) System.getProperty("user.home"));
+            confPath=userHome.resolve("yourhomecloud");
+        } else {
+            confPath = Paths.get(args[0]);
+        }
+        if (!Files.exists(confPath)) {
+            try {
+                Files.createDirectories(confPath);
+            } catch (IOException e) {
+                throw new RuntimeException("unable to create configuration diretory", e);
+            }
+        }
+        System.err.println(confPath.toString());
+        Configuration.getConfiguration(confPath);
+        RMIUtils.getRMIUtils();
+    }
+
     private Scene currentScene;
     private Stage currentStage;
     private PathToBeSavedList pathToBeSaved;
     private NetworkStatus networkStatus;
+    private NetworkShortStatus nst;
+
+    private final static Logger logger = Logger.getLogger(YourHomeCloud.class);
 }
