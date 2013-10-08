@@ -17,22 +17,40 @@ public class NetworkShortStatus extends HBox {
     public NetworkShortStatus() {
         setAlignment(Pos.BASELINE_RIGHT);
         imv = new ImageView();
+        statusLabel = new Label("");
+        setDefaultStatus();
+        getChildren().addAll(statusLabel, imv);
+    }
+
+    private void setDefaultStatus() {
         Image image = new Image("/Fix_R.gif");
         imv.setImage(image);
         imv.setFitHeight(10);
         imv.setFitWidth(10);
-        Label l = new Label("network status");
-        getChildren().addAll(l, imv);
+        statusLabel.setText(DEFAULT_STATUS);
     }
+
+    private void setConnectedStatus() {
+        statusLabel.setText(CONNECTED_STATUS.replace("%IF",Configuration.getConfiguration().getNetworkInterface()));
+        Image image = new Image("/Fix_G.gif");
+        imv.setImage(image);
+        imv.setFitHeight(10);
+        imv.setFitWidth(10);
+    }
+
 
     public void updateNetworkStatus() {
         if (Configuration.getConfiguration().getMainHostRMIAddr()!=null || Configuration.getConfiguration().isMainHost()) {
-            imv.setImage(new Image("/Fix_G.gif"));
+            setConnectedStatus();
         }
         else {
-            imv.setImage(new Image("/Fix_R.gif"));
+            setDefaultStatus();
         }
     }
 
     private ImageView imv;
+    private Label statusLabel;
+
+    private final static String DEFAULT_STATUS = "network status :";
+    private final static String CONNECTED_STATUS = "connected (interface %IF)";
 }

@@ -1,6 +1,10 @@
 .label {
   -fx-font: 12px Arial;
 }
+.enforced {
+    -fx-fill:red;
+    -fx-font-weight: bold;
+}
 
 .bordered-titled-title {
   -fx-background-color: white;

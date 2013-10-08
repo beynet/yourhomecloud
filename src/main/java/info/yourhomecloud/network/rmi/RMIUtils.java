@@ -5,6 +5,7 @@ import info.yourhomecloud.network.NetworkUtils;
 import java.lang.reflect.Proxy;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -34,6 +35,17 @@ public class RMIUtils {
         try {
             logger.debug("try to compute local address");
             InetAddress address = NetworkUtils.getAddress(info.yourhomecloud.configuration.Configuration.getConfiguration().getNetworkInterface());
+            if (address==null) {
+                for (NetworkInterface networkInterface : NetworkUtils.getInterfaces()) {
+                    address = NetworkUtils.getAddress(networkInterface.getName());
+                    if (address!=null) {
+                         Configuration.getConfiguration().setNetworkInterface(networkInterface.getName());
+                    }
+                }
+                if (address==null) {
+                    throw new RuntimeException("no active network interface found");
+                }
+            }
             this.address = address.getHostAddress();
             info.yourhomecloud.configuration.Configuration.getConfiguration().setCurrentRMIAddress(this.address);
             System.setProperty("java.rmi.server.hostname", address.getHostAddress());

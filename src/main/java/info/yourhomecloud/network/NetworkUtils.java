@@ -133,6 +133,11 @@ public class NetworkUtils {
         return result;
     }
 
+    /**
+     * @param interfaceName
+     * @return the inet adress associated with the provided network interface
+     * @throws IOException
+     */
     public static InetAddress getAddress(String interfaceName) throws IOException {
         logger.debug("search address from network interface "+interfaceName);
         InetAddress result = null;

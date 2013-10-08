@@ -45,7 +45,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>info.yourhomecloud.YourHomeCloud</mainClass>
+                            <mainClass>info.yourhomecloud.fxgui.YourHomeCloud</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

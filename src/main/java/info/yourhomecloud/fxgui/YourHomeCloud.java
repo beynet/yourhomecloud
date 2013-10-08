@@ -84,7 +84,6 @@ public class YourHomeCloud extends Application {
                 @Override
                 public void run() {
                     ((NetworkStatus) networkStatus).updateInterface();
-                    ((NetworkStatus) networkStatus).generateText();
                 }
             });
         }
@@ -93,18 +92,16 @@ public class YourHomeCloud extends Application {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-//                    ((NetworkStatus) networkStatus).updateOtherHosts();
-//                    ((NetworkStatus) networkStatus).generateText();
+                    ((NetworkStatus) networkStatus).updateOtherHosts();
                 }
             });
         }
         else if (Configuration.Change.MAIN_HOST.equals(change)) {
             /* Create and display the form */
-            java.awt.EventQueue.invokeLater(new Runnable() {
+            Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
                     ((NetworkStatus) networkStatus).updateMainHost();
-                    ((NetworkStatus) networkStatus).generateText();
                     nst.updateNetworkStatus();
                 }
             });
@@ -303,7 +300,7 @@ public class YourHomeCloud extends Application {
         BasicConfigurator.configure();
 
         org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.TRACE);
-        initConfiguration();
+        initConfiguration(args);
         launch(args);
     }
 
