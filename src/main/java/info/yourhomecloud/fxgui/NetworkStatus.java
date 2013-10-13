@@ -8,8 +8,10 @@ import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.configuration.HostConfigurationBean;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -49,8 +51,17 @@ public class NetworkStatus extends GridPane {
             }
         });
         connectedHosts.getChildren().add(hostsListView);
+        hostsListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if (mouseEvent.isControlDown()==true) {
+                    hostsListView.getSelectionModel().clearSelection();
+                    mouseEvent.consume();
+                }
+            }
+        });
 
-        add(connectedHosts,0,2);
+        add(connectedHosts, 0, 2);
 
     }
 
@@ -76,6 +87,13 @@ public class NetworkStatus extends GridPane {
                 hostsList.add(host);
             }
         }
+    }
+
+    /**
+     * @return the selected host
+     */
+    public HostConfigurationBean getSelectedHost() {
+        return hostsListView.getSelectionModel().getSelectedItem();
     }
 
 

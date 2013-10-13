@@ -59,6 +59,15 @@ public class HostSelector extends DialogModal {
                 }
             }
         );
+        hostsListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if (mouseEvent.isControlDown()==true) {
+                    hostsListView.getSelectionModel().clearSelection();
+                    mouseEvent.consume();
+                }
+            }
+        });
         hostsListView.setPrefWidth(130);
         hostsListView.setPrefHeight(270);
         bp.add(hostsListView, 1, 0,2,5);
@@ -107,13 +116,6 @@ public class HostSelector extends DialogModal {
         if (hostsListView.getSelectionModel().getSelectedIndex()>=0) {
             exit();
         }
-    }
-
-    /**
-     * @return the selected host
-     */
-    public HostConfigurationBean getSelectedHost() {
-        return hostsListView.getSelectionModel().getSelectedItem();
     }
 
     /**

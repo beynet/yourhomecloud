@@ -19,6 +19,7 @@ public abstract class Dialog  extends Stage {
 
         scene = new Scene(root, with, height);
         setScene(scene);
+        initOwner(parent);
     }
     protected final Scene getCurrentScene() {
         return scene;

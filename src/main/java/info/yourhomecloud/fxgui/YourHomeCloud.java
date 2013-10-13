@@ -7,12 +7,20 @@ package info.yourhomecloud.fxgui;
 import info.yourhomecloud.configuration.Configuration;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 
+import info.yourhomecloud.configuration.HostConfigurationBean;
+import info.yourhomecloud.files.FileSyncer;
+import info.yourhomecloud.files.FileSyncerBuilder;
+import info.yourhomecloud.gui.HostsSelector;
+import info.yourhomecloud.hosts.TargetHost;
+import info.yourhomecloud.hosts.TargetHostBuilder;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
 import info.yourhomecloud.network.rmi.RMIUtils;
@@ -39,6 +47,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+
+import javax.swing.*;
 
 /**
  *
@@ -219,8 +229,22 @@ public class YourHomeCloud extends Application {
                     }
                 }
             });
+        }
 
+        // start to sync files to selected hosts
+        {
+            MenuItem syncFiles = new MenuItem("start sync files");
+            menu.getItems().add(syncFiles);
+            syncFiles.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
 
+                    HostConfigurationBean selectedHost = networkStatus.getSelectedHost();
+//                    if (selectedHost !=null) {
+                        startSync(selectedHost);
+//                    }
+                }
+            });
         }
         
         
@@ -265,6 +289,41 @@ public class YourHomeCloud extends Application {
         
         
         vbox.getChildren().addAll(networkStatusPane,directories);
+    }
+
+    private void startSync(HostConfigurationBean host) {
+        // start to sync local host directories on the selected target host
+        // ----------------------------------------------------------------
+        final FileSyncer fs = FileSyncerBuilder.createMonodirectionalFileSyncer();
+        final TargetHost targetHost;
+        try {
+            targetHost = TargetHostBuilder.createRMITargetHost(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+        } catch (IOException ex) {
+            new Alert(currentStage,"unable to obtain remote proxy error=" + ex.getMessage()).show();
+            return;
+        }
+        new Thread() {
+            @Override
+            public void run() {
+                for (String dir : Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot()) {
+                    try {
+                        fs.sync(Paths.get(dir), targetHost,copyStatus);
+                    } catch (Exception ex) {
+                        StringWriter sw = new StringWriter();
+                        sw.append("Error during  copy \n");
+                        ex.printStackTrace(new PrintWriter(sw));
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                new Alert(currentStage,sw.toString()).show();
+                            }
+                        });
+
+                    }
+                }
+            }
+        }.start();
+        copyStatus.setVisible(true);
     }
     
     @Override

@@ -42,3 +42,8 @@
     -fx-border-width: 0px;
     -fx-focus-color : transparent;
 }
+
+.border-test {
+    -fx-border-color: blue;
+    -fx-border-width: 5px;
+}

@@ -11,5 +11,6 @@ public class Styles {
     public static final String COPY_IN_PROCESS = "incopy";
     public static final String COPY_TERMINATED = "copy-terminated";
     public static String NO_BORDER="noborder";
+    public static String BORDER_TEST="border-test";
     public static String CHILD_WINDOW="child";
 }
