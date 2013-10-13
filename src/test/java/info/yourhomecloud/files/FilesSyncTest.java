@@ -20,8 +20,10 @@ public class FilesSyncTest extends RootTest{
         Path local = Paths.get("/tmp/a/b/d");
         Path source = Paths.get("/tmp/a");
         
-        Path destination = Paths.get("/truc/machin");
+        Path destination = Paths.get("/truce/machin");
         Path r = source.relativize(local);
+        Path fail = source.relativize(destination);
+        System.out.println("!!!! failure="+fail);
         
         Path resolved = destination.resolve(r);
         System.out.println(r.toString());

@@ -16,11 +16,11 @@ public class PaneBorderedWithTitle extends VBox {
 
     public PaneBorderedWithTitle(Node content, String title) {
         Label label = new Label(title);
-        label.getStyleClass().add("bordered-titled-title");
+        label.getStyleClass().add("pane-bordered-title");
         
-        content.getStyleClass().add("bordered-titled-content");
+        content.getStyleClass().add("pane-bordered-content");
 
-        getStyleClass().add("bordered-titled-border");
+        getStyleClass().add("pane-bordered-border");
         
         getChildren().addAll(label,content);
     }

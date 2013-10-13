@@ -21,6 +21,7 @@ import javafx.scene.input.KeyEvent;
 public class PathToBeSavedList extends ListView<String>{
     public PathToBeSavedList(ObservableList<String> hostToBeSaved) {
         super(hostToBeSaved);
+        getStyleClass().add(Styles.NO_BORDER);
         textDirectoriesList = hostToBeSaved;
         setOnKeyPressed(new EventHandler<KeyEvent>(){
 

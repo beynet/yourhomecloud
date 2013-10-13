@@ -1,17 +1,23 @@
-.label {
-  -fx-font: 12px Arial;
+.root {
+    -fx-font-family: "Arial";
 }
+
+.child {
+    -fx-font-family: "Comic Sans Ms";
+}
+
+
 .enforced {
     -fx-fill:red;
     -fx-font-weight: bold;
 }
 
-.bordered-titled-title {
+.pane-bordered-title {
   -fx-background-color: white;
   -fx-translate-y: -10;
 }
 
-.bordered-titled-border {
+.pane-bordered-border {
   -fx-content-display: top;
   -fx-border-insets: 20 15 15 15;
   -fx-background-color: white;
@@ -19,18 +25,12 @@
   -fx-border-width: 2;
 }
 
-.bordered-titled-content {
+.pane-bordered-content {
   -fx-padding: 26 10 10 10;
 }
 
 .list-cell:empty {
     -fx-background-color: white;
-}
-.list {
-    -fx-padding : 0;
-}
-.scroll-pane {
-    /*-fx-background-color: blue;*/
 }
 .networkstatus{
     -fx-border-color: white;
@@ -40,4 +40,5 @@
 .noborder {
     -fx-border-color: white;
     -fx-border-width: 0px;
+    -fx-focus-color : transparent;
 }

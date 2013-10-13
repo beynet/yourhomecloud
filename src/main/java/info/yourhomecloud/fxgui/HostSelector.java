@@ -14,11 +14,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -63,26 +65,31 @@ public class HostSelector extends DialogModal {
         
         getRootGroup().getChildren().add(bp);
         this.allowRemove = allowRemove;
+        // add event handler to remove selected host
+        // -----------------------------------------
         if (this.allowRemove==true) {
             hostsListView.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
                 @Override
                 public void handle(KeyEvent t) {
-                    if (KeyCode.DELETE.equals(t.getCode())) {
-                        int selectedIndex = hostsListView.getSelectionModel().getSelectedIndex();
-                        if (selectedIndex>=0) {
-                            HostConfigurationBean selectedHost = hosts.get(selectedIndex);
-                            try {
-                                Configuration.getConfiguration().removeHost(selectedHost.getHostKey());
-                            } catch (IOException ex) {
-                                logger.error("unable to remove host name="+selectedHost.getHostName()+" key="+selectedHost.getHostKey());
-                            }
-                        }
-                    }
+                    keyPressedOnList(t);
                 }
             });
         }
-        
+
+        // button to confirm the selection
+        Button confirm = new Button("OK");
+        confirm.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                confirmClicked();
+            }
+        });
+        bp.add(confirm, 1, 6);
+
+        // current stage register as a configuration observer
+        // to update host list
+        // ---------------------------------------------------
         obs = new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -91,6 +98,40 @@ public class HostSelector extends DialogModal {
             
         };
         Configuration.getConfiguration().addObserver(obs);
+    }
+
+    /**
+     * called when confirm button is clicked
+     */
+    private void confirmClicked() {
+        if (hostsListView.getSelectionModel().getSelectedIndex()>=0) {
+            exit();
+        }
+    }
+
+    /**
+     * @return the selected host
+     */
+    public HostConfigurationBean getSelectedHost() {
+        return hostsListView.getSelectionModel().getSelectedItem();
+    }
+
+    /**
+     * called when a key pressed event is catched on the host list
+     * @param t
+     */
+    private void keyPressedOnList(KeyEvent t) {
+        if (KeyCode.DELETE.equals(t.getCode())) {
+            int selectedIndex = hostsListView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex>=0) {
+                HostConfigurationBean selectedHost = hosts.get(selectedIndex);
+                try {
+                    Configuration.getConfiguration().removeHost(selectedHost.getHostKey());
+                } catch (IOException ex) {
+                    logger.error("unable to remove host name="+selectedHost.getHostName()+" key="+selectedHost.getHostKey());
+                }
+            }
+        }
     }
 
     private void configurationChanged(Configuration configuration, Configuration.Change change) {
@@ -110,6 +151,7 @@ public class HostSelector extends DialogModal {
     private void exit() {
         getParentStage().setOpacity(1);
         Configuration.getConfiguration().deleteObserver(obs);
+        close();
     }
     
     private ListView<HostConfigurationBean> hostsListView;

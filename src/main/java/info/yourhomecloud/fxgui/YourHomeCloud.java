@@ -174,7 +174,7 @@ public class YourHomeCloud extends Application {
             }
         });
         
-        // menu item to show directory chooser
+        // menu item to show network interface selector
         {
             MenuItem networkInteface = new MenuItem("select network interface");
             menu.getItems().add(networkInteface);
@@ -187,8 +187,10 @@ public class YourHomeCloud extends Application {
                 }
             });
         }
+
+        // start a sync
         
-        // menu item to show directory chooser
+        // menu item to show known host list
         {
             MenuItem hostSelector = new MenuItem("show known hosts list");
             menu.getItems().add(hostSelector);
@@ -247,7 +249,7 @@ public class YourHomeCloud extends Application {
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(20));
         vbox.setSpacing(5);
-        vbox.getStyleClass().add("noborder");
+        vbox.getStyleClass().add(Styles.NO_BORDER);
         borderPane.setCenter(vbox);
         
         
