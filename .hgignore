@@ -11,3 +11,6 @@ syntax: regexp
 
 syntax: regexp
 ^\.idea/
+syntax: glob
+yourhomecloud.iml
+nb-configuration.xml
