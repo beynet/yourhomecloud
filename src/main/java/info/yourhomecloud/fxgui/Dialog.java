@@ -18,6 +18,7 @@ public abstract class Dialog  extends Stage {
         root.getStyleClass().add(Styles.CHILD_WINDOW);
 
         scene = new Scene(root, with, height);
+        scene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         setScene(scene);
         initOwner(parent);
     }

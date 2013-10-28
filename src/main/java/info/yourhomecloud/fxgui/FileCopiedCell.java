@@ -13,6 +13,14 @@ public class FileCopiedCell extends TreeCell<FileCopied> {
     @Override
     protected void updateItem(FileCopied fileCopied, boolean b) {
         super.updateItem(fileCopied, b);
-        getStyleClass().add(Styles.COPY_IN_PROCESS);
+        if (fileCopied!=null) {
+            if (fileCopied.isCompleted()==false) {
+                getStyleClass().add(Styles.COPY_IN_PROCESS);
+            }
+            else {
+                getStyleClass().add(Styles.COPY_TERMINATED);
+            }
+            setText(fileCopied.toString());
+        }
     }
 }

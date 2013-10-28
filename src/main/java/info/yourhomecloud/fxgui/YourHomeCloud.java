@@ -246,6 +246,18 @@ public class YourHomeCloud extends Application {
                 }
             });
         }
+
+        // show copy status
+        {
+            MenuItem showCopyStatus = new MenuItem("show copy status");
+            menu.getItems().add(showCopyStatus);
+            showCopyStatus.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    copyStatus.show();
+                }
+            });
+        }
         
         
         // menu item to quit application
@@ -296,6 +308,7 @@ public class YourHomeCloud extends Application {
         // ----------------------------------------------------------------
         final FileSyncer fs = FileSyncerBuilder.createMonodirectionalFileSyncer();
         final TargetHost targetHost;
+
         try {
             targetHost = TargetHostBuilder.createRMITargetHost(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort());
         } catch (IOException ex) {
@@ -305,11 +318,12 @@ public class YourHomeCloud extends Application {
         new Thread() {
             @Override
             public void run() {
+                copyStatus.reset();
                 for (String dir : Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot()) {
                     try {
                         fs.sync(Paths.get(dir), targetHost,copyStatus);
                     } catch (Exception ex) {
-                        StringWriter sw = new StringWriter();
+                        final StringWriter sw = new StringWriter();
                         sw.append("Error during  copy \n");
                         ex.printStackTrace(new PrintWriter(sw));
                         Platform.runLater(new Runnable() {
@@ -323,7 +337,7 @@ public class YourHomeCloud extends Application {
                 }
             }
         }.start();
-        copyStatus.setVisible(true);
+        copyStatus.show();
     }
     
     @Override
@@ -354,6 +368,8 @@ public class YourHomeCloud extends Application {
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         primaryStage.setScene(currentScene);
         primaryStage.show();
+
+        copyStatus = new CopyStatus(primaryStage);
         
     }
 
@@ -405,6 +421,7 @@ public class YourHomeCloud extends Application {
     private PathToBeSavedList pathToBeSaved;
     private NetworkStatus networkStatus;
     private NetworkShortStatus nst;
+    private CopyStatus copyStatus;
 
     private final static Logger logger = Logger.getLogger(YourHomeCloud.class);
 }

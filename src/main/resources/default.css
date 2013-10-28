@@ -2,9 +2,9 @@
     -fx-font-family: "Arial";
 }
 
-.child {
+/*.child {
     -fx-font-family: "Comic Sans Ms";
-}
+}*/
 
 
 .enforced {
@@ -29,6 +29,7 @@
   -fx-padding: 26 10 10 10;
 }
 
+/* make empty list cell not visible */
 .list-cell:empty {
     -fx-background-color: white;
 }
@@ -46,4 +47,19 @@
 .border-test {
     -fx-border-color: blue;
     -fx-border-width: 5px;
+}
+
+
+.incopy {
+    -fx-text-fill: red;
+}
+
+.copy-terminated {
+    -fx-text-fill: green;
+}
+.mytree {
+    -fx-font-size: 15px;
+    -fx-border-color: yellow;
+    -fx-border-width: 10px;
+    -fx-background-color: brown;
 }

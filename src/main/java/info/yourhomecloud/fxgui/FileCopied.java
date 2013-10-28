@@ -19,6 +19,16 @@ public class FileCopied {
         return path;
     }
 
+    public boolean isCompleted() {
+        return this.completed;
+    }
+
+    public String toString() {
+        Path fileName = this.path.getFileName();
+        if (fileName==null) return "/";
+        return fileName.toString();
+    }
+
     private Path path ;
     private boolean completed ;
 }
