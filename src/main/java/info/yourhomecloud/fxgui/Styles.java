@@ -13,4 +13,5 @@ public class Styles {
     public static String NO_BORDER="noborder";
     public static String BORDER_TEST="border-test";
     public static String CHILD_WINDOW="child";
+    public static String ALERT="alert";
 }

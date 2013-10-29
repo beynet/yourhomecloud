@@ -240,9 +240,12 @@ public class YourHomeCloud extends Application {
                 public void handle(ActionEvent actionEvent) {
 
                     HostConfigurationBean selectedHost = networkStatus.getSelectedHost();
-//                    if (selectedHost !=null) {
+                    if (selectedHost !=null) {
                         startSync(selectedHost);
-//                    }
+                    }
+                    else {
+                        new Alert(currentStage,"no host selected in host list").showAndWait();
+                    }
                 }
             });
         }
