@@ -1,14 +1,21 @@
 package info.yourhomecloud.hosts.impl;
 
+import info.yourhomecloud.files.impl.OneLevelVisitor;
 import info.yourhomecloud.files.impl.RemoveFileRemovedInOriginal;
+import info.yourhomecloud.hosts.File;
 import info.yourhomecloud.hosts.TargetHost;
 
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import info.yourhomecloud.utils.FileTools;
 import org.apache.log4j.Logger;
 
 public class LocalTargetHost implements TargetHost {
@@ -26,6 +33,17 @@ public class LocalTargetHost implements TargetHost {
         if (!Files.exists(targetFile)) {
             Files.createDirectories(targetFile);
         }
+    }
+
+    @Override
+    public void listFilesAt(File file) throws IOException {
+        if (!file.isDirectory()) throw new IllegalArgumentException("file to be visited must be a directory");
+        Path targetFile = target.resolve(FileTools.getPathFromPathList(file.getPath()));
+        File visited = new File(file.getPath(), true);
+        OneLevelVisitor visitor = new OneLevelVisitor(targetFile);
+        Files.walkFileTree(targetFile, visitor);
+        file.getChilds().clear();
+        file.getChilds().addAll(visitor.getResult());
     }
 
     @Override

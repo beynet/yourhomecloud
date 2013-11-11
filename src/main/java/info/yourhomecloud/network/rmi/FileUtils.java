@@ -1,5 +1,7 @@
 package info.yourhomecloud.network.rmi;
 
+import info.yourhomecloud.hosts.File;
+
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -59,6 +61,8 @@ public interface FileUtils extends Remote {
      * @throws IOException 
      */
     boolean isFileExisting(String client,List<String> rel) throws RemoteException,IOException;
+
+    File listFilesAt(String client,File file) throws RemoteException,IOException;
 
 //    void removeFilesRemovedOnSourceSide(String client,Path source) throws IOException;
     

@@ -26,7 +26,7 @@ public class FileSyncerImpl extends Observable implements FileSyncer {
         setChanged();
         notifyObservers(new StartOfSync(source));
         Files.walkFileTree(source, visitor);
-        targetHost.removeFilesRemovedOnSourceSide(source);
+        //FIXME : clean removed files targetHost.removeFilesRemovedOnSourceSide(source);
         setChanged();
         notifyObservers(new EndOfSync(source));
     }

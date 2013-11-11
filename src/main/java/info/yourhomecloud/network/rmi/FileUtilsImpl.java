@@ -15,6 +15,7 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 
+import info.yourhomecloud.utils.FileTools;
 import org.apache.log4j.Logger;
 
 public class FileUtilsImpl implements FileUtils {
@@ -27,27 +28,11 @@ public class FileUtilsImpl implements FileUtils {
         return new LocalTargetHost(getTargetPathFromClient(client));
     }
 
-    private Path getPathFromPathList(List<String> pathList) {
-        if (pathList == null || pathList.isEmpty()) {
-            throw new IllegalArgumentException("pathList must not be null nor empty");
-        }
-        StringBuilder sb = null;
-        for (String p : pathList) {
-            if (sb == null) {
-                sb = new StringBuilder(p);
-            } else {
-                sb.append(File.separator);
-                sb.append(p);
-            }
-        }
-        return Paths.get(sb.toString());
-    }
-
     @Override
     public void createDirectoryIfNotExist(String client, List<String> rel) throws IOException {
         try {
             TargetHost target = getTargetHostFromCient(client);
-            Path relPath = getPathFromPathList(rel);
+            Path relPath = FileTools.getPathFromPathList(rel);
             target.createDirectoryIfNotExist(relPath);
         } catch (Exception e) {
             logger.error("error", e);
@@ -57,21 +42,28 @@ public class FileUtilsImpl implements FileUtils {
     @Override
     public boolean isFileExisting(String client, List<String> rel) throws IOException {
         TargetHost target = getTargetHostFromCient(client);
-        Path relPath = getPathFromPathList(rel);
+        Path relPath = FileTools.getPathFromPathList(rel);
         return target.isFileExisting(relPath);
+    }
+
+    @Override
+    public info.yourhomecloud.hosts.File listFilesAt(String client,info.yourhomecloud.hosts.File file) throws IOException{
+        TargetHost target = getTargetHostFromCient(client);
+        target.listFilesAt(file);
+        return file;
     }
 
     @Override
     public boolean isFileExistingAndNotModifiedSince(String client, List<String> rel, long millis) throws IOException {
         TargetHost target = getTargetHostFromCient(client);
-        Path relPath = getPathFromPathList(rel);
+        Path relPath = FileTools.getPathFromPathList(rel);
         return target.isFileExistingAndNotModifiedSince(relPath, millis);
     }
 
     @Override
     public void copyFile(String client, byte[] file, long modified, List<String> rel) throws IOException {
         Path target = getTargetPathFromClient(client);
-        Path relPath = getPathFromPathList(rel);
+        Path relPath = FileTools.getPathFromPathList(rel);
         Path filePath = target.resolve(relPath);
         logger.debug("writing file " + filePath);
         Files.write(filePath, file);
@@ -82,7 +74,7 @@ public class FileUtilsImpl implements FileUtils {
     public void copyFileByChunk(String client, byte[] file, long offset, int length, boolean last, long modified, List<String> rel) throws IOException {
         try {
             Path target = getTargetPathFromClient(client);
-            Path relPath = getPathFromPathList(rel);
+            Path relPath = FileTools.getPathFromPathList(rel);
             Path filePath = target.resolve(relPath);
             logger.debug("writing by chunk file " + filePath.toString() + " from " + offset + " nb bytes " + length);
             final OpenOption[] options;
