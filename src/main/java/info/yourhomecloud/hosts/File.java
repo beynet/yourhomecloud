@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * helper class used to convey information about files found at the remote side
+ * helper class used to convey information about files found at the remote side.
+ * Path used must be relative , for example if a folder name folder1 is backuped
+ * with a sub directory named folder2, folder2 relative path will be folder1/folder2
  */
 public class File implements Serializable {
 

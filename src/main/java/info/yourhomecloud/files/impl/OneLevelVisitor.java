@@ -6,27 +6,34 @@ import info.yourhomecloud.utils.FileTools;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: beynet
- * Date: 09/11/2013
- * Time: 16:44
- * To change this template use File | Settings | File Templates.
+ * visitor used to construct level 1 childs of a directory
  */
 public class OneLevelVisitor implements FileVisitor<Path> {
 
     private Path toBeVisited;
     private List<File> result;
-    public OneLevelVisitor(Path toBeVisited) {
+
+    /**
+     * construct the visotor
+     * @param toBeVisited : path of the child from which all level 1 childs
+     * will be listed
+     */
+    public OneLevelVisitor(Path toBeVisited) throws IllegalArgumentException {
+        if (!Files.isDirectory(toBeVisited)) throw new IllegalArgumentException("given path must be a directory");
         this.toBeVisited = toBeVisited ;
         this.result = new ArrayList<>();
     }
 
+    /**
+     *@return all the level 1 childs of the visited directory
+     */
     public List<File> getResult() {
         return result;
     }
@@ -36,6 +43,7 @@ public class OneLevelVisitor implements FileVisitor<Path> {
         if (!dir.equals(toBeVisited)) {
             List<String> relPath = FileTools.getPathListFromPath(toBeVisited.relativize(dir));
             result.add(new File(relPath,true));
+            // we only visite level 1 childs
             return FileVisitResult.SKIP_SUBTREE;
         }
         return FileVisitResult.CONTINUE;
