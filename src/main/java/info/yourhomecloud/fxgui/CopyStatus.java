@@ -22,11 +22,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 /**
- * Created with IntelliJ IDEA.
- * User: beynet
- * Date: 12/10/13
- * Time: 15:48
- * To change this template use File | Settings | File Templates.
+ * stage which contain the tree view showing the copy in progress
  */
 public class CopyStatus extends DialogNotModal implements Observer {
     public CopyStatus(Stage parent) {
@@ -88,6 +84,12 @@ public class CopyStatus extends DialogNotModal implements Observer {
         }
     }
 
+    /**
+     * recursive method used to add an element to the tree.
+     * New or modified element is stored following its path.
+     * @param file
+     * @param parent
+     */
     void addElement(FileCopied file,TreeItem<FileCopied> parent) {
 
 

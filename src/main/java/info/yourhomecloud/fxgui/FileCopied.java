@@ -3,11 +3,7 @@ package info.yourhomecloud.fxgui;
 import java.nio.file.Path;
 
 /**
- * Created with IntelliJ IDEA.
- * User: beynet
- * Date: 12/10/13
- * Time: 16:01
- * To change this template use File | Settings | File Templates.
+ * Helper class used to represent a file copied one a remote host
  */
 public class FileCopied {
     public FileCopied(Path path,boolean completed) {

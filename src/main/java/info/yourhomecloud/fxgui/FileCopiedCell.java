@@ -7,11 +7,7 @@ import javafx.scene.image.ImageView;
 import java.nio.file.Files;
 
 /**
- * Created with IntelliJ IDEA.
- * User: beynet
- * Date: 12/10/13
- * Time: 16:14
- * To change this template use File | Settings | File Templates.
+ * a cell representing a file copied (or in copy) on the remote side
  */
 public class FileCopiedCell extends TreeCell<FileCopied> {
 

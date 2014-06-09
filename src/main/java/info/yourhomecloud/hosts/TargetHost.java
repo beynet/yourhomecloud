@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * represent a host on which remote commands may be send
+ */
 public interface TargetHost {
 
     /**
@@ -50,7 +53,7 @@ public interface TargetHost {
     /**
      * list child files of the given file. This method is
      * not recursive, child directories will not be traversed. Given file path must be a
-     * relative file path
+     * relative file path (relative to the directory where files will be backuped)
      * @param file
      * @throws IOException
      */
