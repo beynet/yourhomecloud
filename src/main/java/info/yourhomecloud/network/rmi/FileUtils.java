@@ -8,12 +8,14 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface FileUtils extends Remote {
+
     /**
      * ask to remote host to create directory specified if not already existing
      * @param client
-     * @param rel
+     * @param relPath : the remote relative path (relative to the configuration dir) expressed as a list
+     *                to be plateforme independant
      * @throws RemoteException
-     * @throws IOException 
+     * @throws IOException
      */
     public void createDirectoryIfNotExist(String client,List<String> relPath) throws RemoteException,IOException ;
     /**
@@ -62,6 +64,14 @@ public interface FileUtils extends Remote {
      */
     boolean isFileExisting(String client,List<String> rel) throws RemoteException,IOException;
 
+    /**
+     *
+     * @param client
+     * @param file
+     * @return an updated copy of file, with the level 1 childs of file found on client side
+     * @throws RemoteException
+     * @throws IOException
+     */
     File listFilesAt(String client,File file) throws RemoteException,IOException;
 
 //    void removeFilesRemovedOnSourceSide(String client,Path source) throws IOException;
