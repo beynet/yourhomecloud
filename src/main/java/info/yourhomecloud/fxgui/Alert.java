@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -29,44 +30,32 @@ public class Alert extends DialogModal {
 
         GridPane grid = new GridPane();
         grid.prefWidthProperty().bind(getCurrentScene().widthProperty());
-        grid.setPadding(new Insets(5));
+        /*grid.setPadding(new Insets(5));
         grid.setHgap(5);
-        grid.setVgap(5);
+        grid.setVgap(5);*/
         grid.getStyleClass().addAll(Styles.ALERT);
 
-        ColumnConstraints column1 = new ColumnConstraints();
-        column1.setPercentWidth(33);
-        ColumnConstraints column2 = new ColumnConstraints();
-        column2.setPercentWidth(33);
-        ColumnConstraints column3 = new ColumnConstraints();
-        column3.setPercentWidth(33);
-        grid.getColumnConstraints().addAll(column1, column2,column3);
+
+
+        getRootGroup().getChildren().add(grid);
 
         grid.add(text,0,0,3,1);
         GridPane.setHalignment(text,HPos.CENTER);
 
-        grid.add(confirm,1,1);
+        grid.add(confirm,1,1,1,1);
         GridPane.setHalignment(confirm,HPos.CENTER);
 
-        getRootGroup().getChildren().add(grid);
+        ColumnConstraints c1 = new ColumnConstraints();
+        c1.setPercentWidth(33);
+        grid.getColumnConstraints().add(c1);
+
 
         // resize window to fit the text
         // ------------------------------
-        setWidth(forSize.getLayoutBounds().getWidth()+40);
-        setHeight(forSize.getLayoutBounds().getHeight() + 80);
+        setWidth(forSize.getLayoutBounds().getWidth());
 
-        setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent windowEvent) {
-                windowEvent.consume();
-            }
-        });
+        setOnCloseRequest(windowEvent -> windowEvent.consume());
 
-        confirm.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                close();
-            }
-        });
+        confirm.setOnMouseClicked(mouseEvent -> close());
     }
 }
