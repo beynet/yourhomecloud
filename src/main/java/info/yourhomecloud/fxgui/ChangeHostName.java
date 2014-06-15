@@ -34,28 +34,18 @@ public class ChangeHostName extends DialogModal {
         Label hostNameLabel = new Label("Host Name :");
 
         Button confirm = new Button("confirm");
-        confirm.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent t) {
-                if (hostName.getText()!=null && !"".equals(hostName.getText())) {
-                    Configuration.getConfiguration().setCurrentHostName(hostName.getText());
-                }
-                exit();
+        confirm.setOnAction(t -> {
+            if (hostName.getText()!=null && !"".equals(hostName.getText())) {
+                Configuration.getConfiguration().setCurrentHostName(hostName.getText());
             }
+            exit();
         });
         grid.add(hostNameLabel, 0, 0);
         grid.add(hostName, 1, 0);
         grid.add(confirm, 1, 1);
         GridPane.setHalignment(confirm, HPos.RIGHT);
         
-        setOnCloseRequest(new EventHandler<WindowEvent>() {
-
-            @Override
-            public void handle(WindowEvent t) {
-                exit();
-            }
-        });
+        setOnCloseRequest(t -> exit());
     }
     
     private void exit() {

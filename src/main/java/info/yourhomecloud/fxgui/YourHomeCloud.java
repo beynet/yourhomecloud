@@ -12,6 +12,8 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -23,7 +25,9 @@ import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.hosts.TargetHostBuilder;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
+import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
+import info.yourhomecloud.utils.FileTools;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -171,16 +175,13 @@ public class YourHomeCloud extends Application {
         // menu item to show directory chooser
         MenuItem showDirectoryChooser = new MenuItem("select new directory to be backuped");
         menu.getItems().add(showDirectoryChooser);
-        showDirectoryChooser.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                currentStage.setOpacity(0.5);
-                DirectoryChooser d = new DirectoryChooser();
-                File showDialog = d.showDialog(currentStage);
-                currentStage.setOpacity(1);
-                if (showDialog!=null) {
-                    Configuration.getConfiguration().addDirectoryToBeSaved(showDialog.toPath());
-                }
+        showDirectoryChooser.setOnAction(t -> {
+            currentStage.setOpacity(0.5);
+            DirectoryChooser d = new DirectoryChooser();
+            File showDialog = d.showDialog(currentStage);
+            currentStage.setOpacity(1);
+            if (showDialog!=null) {
+                Configuration.getConfiguration().addDirectoryToBeSaved(showDialog.toPath());
             }
         });
         
@@ -188,13 +189,10 @@ public class YourHomeCloud extends Application {
         {
             MenuItem networkInteface = new MenuItem("select network interface");
             menu.getItems().add(networkInteface);
-            networkInteface.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent t) {
-                    currentStage.setOpacity(0.5);
-                    NetworkInterfaceSelector networkInterfaceSelector = new NetworkInterfaceSelector(currentStage);
-                    networkInterfaceSelector.show();
-                }
+            networkInteface.setOnAction(t -> {
+                currentStage.setOpacity(0.5);
+                NetworkInterfaceSelector networkInterfaceSelector = new NetworkInterfaceSelector(currentStage);
+                networkInterfaceSelector.show();
             });
         }
 
@@ -204,29 +202,23 @@ public class YourHomeCloud extends Application {
         {
             MenuItem hostSelector = new MenuItem("show known hosts list");
             menu.getItems().add(hostSelector);
-            hostSelector.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent t) {
-                    currentStage.setOpacity(0.5);
-                    HostSelector hostsList = new HostSelector(currentStage,true);
-                    hostsList.show();
-                }
+            hostSelector.setOnAction(t -> {
+                currentStage.setOpacity(0.5);
+                HostSelector hostsList = new HostSelector(currentStage,true);
+                hostsList.show();
             });
         }
 
         {
             MenuItem scanNetwork = new MenuItem("scan network");
             menu.getItems().add(scanNetwork);
-            scanNetwork.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    try {
-                        final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
-                        final Thread thread = new Thread(broadcasterListener);
-                        thread.start();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+            scanNetwork.setOnAction(actionEvent -> {
+                try {
+                    final BroadcasterListener broadcasterListener = new BroadcasterListener(NetworkUtils.DEFAULT_BROADCAST_PORT);
+                    final Thread thread = new Thread(broadcasterListener);
+                    thread.start();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
             });
         }
@@ -235,17 +227,30 @@ public class YourHomeCloud extends Application {
         {
             MenuItem syncFiles = new MenuItem("start sync files");
             menu.getItems().add(syncFiles);
-            syncFiles.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
+            syncFiles.setOnAction(actionEvent -> {
 
-                    HostConfigurationBean selectedHost = networkStatus.getSelectedHost();
-                    if (selectedHost !=null) {
-                        startSync(selectedHost);
-                    }
-                    else {
-                        new Alert(currentStage,"no host selected in host list").showAndWait();
-                    }
+                HostConfigurationBean selectedHost = networkStatus.getSelectedHost();
+                if (selectedHost !=null) {
+                    startSync(selectedHost);
+                }
+                else {
+                    new Alert(currentStage,"no host selected in host list").showAndWait();
+                }
+            });
+        }
+
+        // display files backuped on the selected remote host
+        {
+            MenuItem showBackupedFiles = new MenuItem("show backuped files");
+            menu.getItems().add(showBackupedFiles);
+            showBackupedFiles.setOnAction(actionEvent -> {
+
+                HostConfigurationBean selectedHost = networkStatus.getSelectedHost();
+                if (selectedHost !=null) {
+                    this.showBackupedFiles(selectedHost);
+                }
+                else {
+                    new Alert(currentStage,"no host selected in host list").showAndWait();
                 }
             });
         }
@@ -254,12 +259,7 @@ public class YourHomeCloud extends Application {
         {
             MenuItem showCopyStatus = new MenuItem("show copy status");
             menu.getItems().add(showCopyStatus);
-            showCopyStatus.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    copyStatus.show();
-                }
-            });
+            showCopyStatus.setOnAction(actionEvent -> copyStatus.show());
         }
         
         
@@ -267,17 +267,37 @@ public class YourHomeCloud extends Application {
         MenuItem quit = MenuItemBuilder.create().text("Quit").accelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.META_DOWN)).build();
         menu.getItems().add(quit);
 
-        quit.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                quitApp();
-            }
-        });
+        quit.setOnAction(t -> quitApp());
         
         borderPane.setTop(menuBar);
     }
 
-    
+    private void showBackupedFiles(HostConfigurationBean host) {
+        final RemoteFiles remoteFiles = new RemoteFiles(currentStage);
+        final List<String> directoriesToBeSavedSnapshot = Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot();
+        final TargetHost targetHost;
+
+        try {
+            targetHost = TargetHostBuilder.createRMITargetHost(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+        } catch (IOException ex) {
+            new Alert(currentStage,"unable to obtain remote proxy error=" + ex.getMessage()).show();
+            return;
+        }
+        List<info.yourhomecloud.hosts.File> files = new ArrayList<>();
+        for (String p : directoriesToBeSavedSnapshot) {
+            final info.yourhomecloud.hosts.File file = new info.yourhomecloud.hosts.File(FileTools.getPathListFromPath(Paths.get(p).getFileName()), true);
+            try {
+                targetHost.listFilesAt(file);
+            } catch (IOException e) {
+                new Alert(currentStage,"unable to communicate with remote hsot").show();
+            }
+            remoteFiles.addRootFile(file);
+        }
+        //targetHost.listFilesAt(directoriesToBeSavedSnapshot.get(0));
+        remoteFiles.show();
+    }
+
+
     private void prepareNetworkStatus(BorderPane borderPane) {
         nst = new NetworkShortStatus();
         borderPane.setBottom(nst);
@@ -329,13 +349,7 @@ public class YourHomeCloud extends Application {
                         final StringWriter sw = new StringWriter();
                         sw.append("Error during  copy \n");
                         ex.printStackTrace(new PrintWriter(sw));
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                new Alert(currentStage,sw.toString()).show();
-                            }
-                        });
-
+                        Platform.runLater(() -> new Alert(currentStage,sw.toString()).show());
                     }
                 }
             }

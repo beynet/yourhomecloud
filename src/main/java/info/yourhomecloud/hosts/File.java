@@ -14,7 +14,7 @@ public class File implements Serializable {
     public File(List<String> path,boolean isDirectory) {
         this.path        = path ;
         this.isDirectory = isDirectory ;
-        this.childs = new ArrayList<File>();
+        this.childs = new ArrayList<>();
     }
 
 

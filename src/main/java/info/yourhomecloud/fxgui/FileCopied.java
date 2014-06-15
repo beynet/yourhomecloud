@@ -3,7 +3,7 @@ package info.yourhomecloud.fxgui;
 import java.nio.file.Path;
 
 /**
- * Helper class used to represent a file copied one a remote host
+ * Helper class used to represent a file copied on a remote host
  */
 public class FileCopied {
     public FileCopied(Path path,boolean completed) {
