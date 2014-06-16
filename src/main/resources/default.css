@@ -62,3 +62,10 @@
     -fx-border-width: 10px;
     -fx-background-color: brown;
 }
+
+.removed {
+    -fx-text-fill: red;
+}
+.remote-obsolete {
+    -fx-text-fill: darkblue;
+}

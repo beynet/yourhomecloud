@@ -15,8 +15,16 @@ public class File implements Serializable {
         this.path        = path ;
         this.isDirectory = isDirectory ;
         this.childs = new ArrayList<>();
+        this.lastModified = 0;
     }
 
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
 
     public List<String> getPath() {
         return path;
@@ -59,4 +67,5 @@ public class File implements Serializable {
     private boolean      isDirectory;
     private List<String> path;
     private List<File>   childs;
+    private long         lastModified;
 }

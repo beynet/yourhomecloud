@@ -54,7 +54,9 @@ public class OneLevelVisitor implements FileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         List<String> relPath = FileTools.getPathListFromPath(toRelativize.relativize(file));
-        result.add(new File(relPath, false));
+        final File f = new File(relPath, false);
+        f.setLastModified(attrs.lastModifiedTime().toMillis());
+        result.add(f);
         return FileVisitResult.CONTINUE;
     }
 

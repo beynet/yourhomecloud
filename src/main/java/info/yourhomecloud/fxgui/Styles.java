@@ -9,6 +9,8 @@ package info.yourhomecloud.fxgui;
  */
 public class Styles {
     public static final String COPY_IN_PROCESS = "incopy";
+    public static final String LOCALE_FILE_REMOVED = "removed";
+    public static final String REMOTE_FILE_OBSOLETE ="remote-obsolete";
     public static final String COPY_TERMINATED = "copy-terminated";
     public static String NO_BORDER="noborder";
     public static String BORDER_TEST="border-test";

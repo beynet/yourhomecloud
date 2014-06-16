@@ -257,7 +257,7 @@ public class YourHomeCloud extends Application {
 
         // show copy status
         {
-            MenuItem showCopyStatus = new MenuItem("show copy status");
+            MenuItem showCopyStatus = new MenuItem("show current or last copy status");
             menu.getItems().add(showCopyStatus);
             showCopyStatus.setOnAction(actionEvent -> copyStatus.show());
         }
@@ -283,16 +283,7 @@ public class YourHomeCloud extends Application {
             new Alert(currentStage,"unable to obtain remote proxy error=" + ex.getMessage()).show();
             return;
         }
-        List<info.yourhomecloud.hosts.File> files = new ArrayList<>();
-        for (String p : directoriesToBeSavedSnapshot) {
-            final info.yourhomecloud.hosts.File file = new info.yourhomecloud.hosts.File(FileTools.getPathListFromPath(Paths.get(p).getFileName()), true);
-            try {
-                targetHost.listFilesAt(file);
-            } catch (IOException e) {
-                new Alert(currentStage,"unable to communicate with remote host").show();
-            }
-            remoteFiles.addRootFile(file);
-        }
+
         //targetHost.listFilesAt(directoriesToBeSavedSnapshot.get(0));
         remoteFiles.show();
     }

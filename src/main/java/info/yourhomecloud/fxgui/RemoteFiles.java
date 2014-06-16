@@ -1,5 +1,6 @@
 package info.yourhomecloud.fxgui;
 
+import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.hosts.File;
 import info.yourhomecloud.hosts.TargetHost;
@@ -19,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -36,13 +38,15 @@ public class RemoteFiles extends DialogNotModal {
         files.setCellFactory(fileCopiedTreeView -> new RemoteFilesCell());
         files.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue==null) return;
-            TreeItem<File> childClicked = newValue;
-            File file = childClicked.getValue();
+            TreeItem<RemoteFile> childClicked = newValue;
+            final RemoteFile value = childClicked.getValue();
+            if (value==null) return;
+            File file = value.getRemoteFile();
             if (!childClicked.getChildren().isEmpty() ||!file.isDirectory()) return;
 
             final TargetHost targetHost;
             try {
-                targetHost = TargetHostBuilder.createRMITargetHost(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+                targetHost = TargetHostBuilder.createRMITargetHost(this.host.getHostKey(), this.host.getCurrentRMIAddress(), this.host.getCurrentRMIPort());
             } catch (IOException ex) {
                 new Alert(this, "unable to obtain remote proxy error=" + ex.getMessage()).show();
                 return;
@@ -52,13 +56,30 @@ public class RemoteFiles extends DialogNotModal {
                 try {
                     targetHost.listFilesAt(file);
                     for (File f : file.getChilds()) {
-                        addFile(f, childClicked);
+                        childClicked.getChildren().add(new TreeItem<>(new RemoteFile(value.getLocaleFile(),f)));
                     }
                 } catch (IOException e) {
                     new Alert(this, "server error" + e.getMessage()).show();
                 }
             }
         });
+
+
+        // add root files to be backuped to tree view
+        // ------------------------------------------
+        final List<String> directoriesToBeSavedSnapshot = Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot();
+        final TargetHost targetHost;
+
+        try {
+            targetHost = TargetHostBuilder.createRMITargetHost(host.getHostKey(), host.getCurrentRMIAddress(), host.getCurrentRMIPort());
+        } catch (IOException ex) {
+            new Alert(this,"unable to obtain remote proxy error=" + ex.getMessage()).show();
+            return;
+        }
+        for (String localFile : directoriesToBeSavedSnapshot) {
+            final RemoteFile remoteFile = new RemoteFile(Paths.get(localFile));
+            root.getChildren().add(new TreeItem<>(remoteFile));
+        }
 
         //files.setShowRoot(true);
         HBox hbox = new HBox();
@@ -76,19 +97,8 @@ public class RemoteFiles extends DialogNotModal {
 
 
 
-    public void addRootFile(File file) {
-        addFile(file,files.getRoot());
-    }
-
-    public void addFile(File file,TreeItem<File> parent) {
-        TreeItem<File> newChild = new TreeItem<>(file);
-        newChild.setExpanded(false);
-        parent.getChildren().add(newChild);
-    }
-
-
-    private TreeView<File> files ;
-    private TreeItem<File> root ;
+    private TreeView<RemoteFile> files ;
+    private TreeItem<RemoteFile> root ;
     private HostConfigurationBean host;
     private final static Logger logger = Logger.getLogger(RemoteFiles.class);
 }
