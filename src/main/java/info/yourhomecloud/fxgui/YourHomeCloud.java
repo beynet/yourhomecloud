@@ -103,12 +103,7 @@ public class YourHomeCloud extends Application {
         }
         else if (Configuration.Change.OTHER_HOSTS.equals(change)) {
             /* Create and display the form */
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    ((NetworkStatus) networkStatus).updateOtherHosts();
-                }
-            });
+            Platform.runLater(() -> ((NetworkStatus) networkStatus).updateOtherHosts());
         }
         else if (Configuration.Change.MAIN_HOST.equals(change)) {
             /* Create and display the form */

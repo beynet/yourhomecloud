@@ -15,11 +15,17 @@ import javafx.scene.control.ListCell;
 public class HostCell extends ListCell<HostConfigurationBean>{
 
     @Override
-    protected void updateItem(HostConfigurationBean t, boolean bln) {
-        super.updateItem(t, bln);
-        if (t!=null) {
-            Label label = new Label(t.getHostName()+" "+t.getHostKey());
-            setGraphic(label);
+    protected void updateItem(HostConfigurationBean t, boolean empty) {
+        super.updateItem(t, empty);
+
+        if (empty==true) {
+            setGraphic(null);
+        }
+        else {
+            if (t!=null) {
+                Label label = new Label(t.getHostName()+" "+t.getHostKey());
+                setGraphic(label);
+            }
         }
     }
     

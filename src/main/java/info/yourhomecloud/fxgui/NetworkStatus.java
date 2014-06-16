@@ -18,6 +18,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 
+import java.util.stream.Collectors;
+
 
 /**
  *
@@ -82,11 +84,7 @@ public class NetworkStatus extends GridPane {
 
     public final void updateOtherHosts() {
         hostsList.clear();
-        for (HostConfigurationBean host : Configuration.getConfiguration().getOtherHostsSnapshot()) {
-            if (host.getCurrentRMIAddress() != null) {
-                hostsList.add(host);
-            }
-        }
+        hostsList.addAll(Configuration.getConfiguration().getOtherHostsSnapshot().stream().filter(host -> host.getCurrentRMIAddress() != null).collect(Collectors.toList()));
     }
 
     /**
