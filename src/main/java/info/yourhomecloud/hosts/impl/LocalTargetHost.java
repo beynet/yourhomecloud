@@ -39,7 +39,7 @@ public class LocalTargetHost implements TargetHost {
     public void listFilesAt(File file) throws IOException {
         if (!file.isDirectory()) throw new IllegalArgumentException("file to be visited must be a directory");
         Path targetFile = target.resolve(FileTools.getPathFromPathList(file.getPath()));
-        OneLevelVisitor visitor = new OneLevelVisitor(targetFile);
+        OneLevelVisitor visitor = new OneLevelVisitor(target,targetFile);
         Files.walkFileTree(targetFile, visitor);
         file.getChilds().clear();
         file.getChilds().addAll(visitor.getResult());

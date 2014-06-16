@@ -15,22 +15,27 @@ public class FileCopiedCell extends TreeCell<FileCopied> {
 
 
     @Override
-    protected void updateItem(FileCopied fileCopied, boolean b) {
-        super.updateItem(fileCopied, b);
-        if (fileCopied!=null) {
-            if (Files.isDirectory(fileCopied.getPath())) {
-                ImageView imageView = new ImageView(folder);
-                imageView.setFitWidth(24);
-                imageView.setFitHeight(24);
-                setGraphic(imageView);
+    protected void updateItem(FileCopied fileCopied, boolean empty) {
+        super.updateItem(fileCopied, empty);
+        if (empty==true) {
+            setText(null);
+            setGraphic(null);
+        }
+        else {
+            if (fileCopied != null) {
+                if (Files.isDirectory(fileCopied.getPath())) {
+                    ImageView imageView = new ImageView(folder);
+                    imageView.setFitWidth(24);
+                    imageView.setFitHeight(24);
+                    setGraphic(imageView);
+                }
+                if (fileCopied.isCompleted() == false) {
+                    getStyleClass().add(Styles.COPY_IN_PROCESS);
+                } else {
+                    getStyleClass().add(Styles.COPY_TERMINATED);
+                }
+                setText(fileCopied.toString());
             }
-            if (fileCopied.isCompleted()==false) {
-                getStyleClass().add(Styles.COPY_IN_PROCESS);
-            }
-            else {
-                getStyleClass().add(Styles.COPY_TERMINATED);
-            }
-            setText(fileCopied.toString());
         }
     }
 }

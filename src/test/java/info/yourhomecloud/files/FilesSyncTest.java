@@ -87,7 +87,7 @@ public class FilesSyncTest extends RootTest{
             child4 = Files.createFile(tempDir.resolve(Paths.get("child4")));
             child6NotFound = Files.createFile(child5Dir.resolve(Paths.get("child6NotFound")));
 
-            OneLevelVisitor visitor = new OneLevelVisitor(tempDir);
+            OneLevelVisitor visitor = new OneLevelVisitor(tempDir,tempDir);
             Files.walkFileTree(tempDir, visitor);
             List<File> result = visitor.getResult();
             assertThat(result.size(),is(4));
@@ -131,7 +131,7 @@ public class FilesSyncTest extends RootTest{
         targetHost.listFilesAt(file);
 
         // search child files in origin
-        OneLevelVisitor oneLevelVisitor = new OneLevelVisitor(toBeCopied);
+        OneLevelVisitor oneLevelVisitor = new OneLevelVisitor(toBeCopied.getParent(),toBeCopied);
         Files.walkFileTree(toBeCopied,oneLevelVisitor);
 
         assertThat(file.getChilds().size(),is(oneLevelVisitor.getResult().size()));
@@ -152,7 +152,7 @@ public class FilesSyncTest extends RootTest{
         localTargetHost.listFilesAt(file);
 
         // search child files in origin
-        OneLevelVisitor oneLevelVisitor = new OneLevelVisitor(toBeCopied);
+        OneLevelVisitor oneLevelVisitor = new OneLevelVisitor(toBeCopied.getParent(),toBeCopied);
         Files.walkFileTree(toBeCopied,oneLevelVisitor);
 
         assertThat(file.getChilds().size(),is(oneLevelVisitor.getResult().size()));

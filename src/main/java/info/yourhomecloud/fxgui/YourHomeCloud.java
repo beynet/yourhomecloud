@@ -273,7 +273,7 @@ public class YourHomeCloud extends Application {
     }
 
     private void showBackupedFiles(HostConfigurationBean host) {
-        final RemoteFiles remoteFiles = new RemoteFiles(currentStage);
+        final RemoteFiles remoteFiles = new RemoteFiles(currentStage,host);
         final List<String> directoriesToBeSavedSnapshot = Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot();
         final TargetHost targetHost;
 
@@ -289,7 +289,7 @@ public class YourHomeCloud extends Application {
             try {
                 targetHost.listFilesAt(file);
             } catch (IOException e) {
-                new Alert(currentStage,"unable to communicate with remote hsot").show();
+                new Alert(currentStage,"unable to communicate with remote host").show();
             }
             remoteFiles.addRootFile(file);
         }

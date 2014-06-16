@@ -18,6 +18,7 @@ import java.util.List;
 public class OneLevelVisitor implements FileVisitor<Path> {
 
     private Path toBeVisited;
+    private Path toRelativize;
     private List<File> result;
 
     /**
@@ -25,9 +26,10 @@ public class OneLevelVisitor implements FileVisitor<Path> {
      * @param toBeVisited : path of the child from which all level 1 childs
      * will be listed
      */
-    public OneLevelVisitor(Path toBeVisited) throws IllegalArgumentException {
+    public OneLevelVisitor(Path toRelativize,Path toBeVisited) throws IllegalArgumentException {
         if (!Files.isDirectory(toBeVisited)) throw new IllegalArgumentException("given path must be a directory");
         this.toBeVisited = toBeVisited ;
+        this.toRelativize =toRelativize;
         this.result = new ArrayList<>();
     }
 
@@ -41,7 +43,7 @@ public class OneLevelVisitor implements FileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         if (!dir.equals(toBeVisited)) {
-            List<String> relPath = FileTools.getPathListFromPath(toBeVisited.relativize(dir));
+            List<String> relPath = FileTools.getPathListFromPath(toRelativize.relativize(dir));
             result.add(new File(relPath,true));
             // we only visite level 1 childs
             return FileVisitResult.SKIP_SUBTREE;
@@ -51,7 +53,7 @@ public class OneLevelVisitor implements FileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        List<String> relPath = FileTools.getPathListFromPath(toBeVisited.relativize(file));
+        List<String> relPath = FileTools.getPathListFromPath(toRelativize.relativize(file));
         result.add(new File(relPath, false));
         return FileVisitResult.CONTINUE;
     }
