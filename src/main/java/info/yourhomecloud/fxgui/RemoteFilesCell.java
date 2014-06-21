@@ -1,8 +1,14 @@
 package info.yourhomecloud.fxgui;
 
+import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.hosts.File;
+import info.yourhomecloud.hosts.TargetHost;
+import info.yourhomecloud.hosts.TargetHostBuilder;
 import info.yourhomecloud.utils.FileTools;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.apache.log4j.Logger;
@@ -17,16 +23,33 @@ import java.util.List;
  * Created by beynet on 15/06/2014.
  */
 public class RemoteFilesCell extends TreeCell<RemoteFile> {
-    private static final Image folder = new Image(FileCopiedCell.class.getResourceAsStream("/Folder.png"));
+
+
+    public RemoteFilesCell(RemoteFiles remoteFiles) {
+        contextMenu = new ContextMenu();
+        MenuItem remove = new MenuItem("remove");
+        contextMenu.getItems().add(remove);
+
+        remove.setOnAction((evt)->{
+            TreeItem<RemoteFile> selected = getTreeView().getSelectionModel().getSelectedItem();
+            if (selected!=null) {
+                remoteFiles.removeFile(selected);
+            }
+        });
+
+    }
+
     @Override
     protected void updateItem(RemoteFile item, boolean empty) {
         super.updateItem(item,empty);
         if (empty==true) {
             setText(null);
             setGraphic(null);
+            setContextMenu(null);
         }
         else {
             if (item != null) {
+                setContextMenu(contextMenu);
 
                 final File remoteFile = item.getRemoteFile();
                 final Path localeFile = item.getLocaleFile();
@@ -71,6 +94,9 @@ public class RemoteFilesCell extends TreeCell<RemoteFile> {
             }
         }
     }
+
+    private static final Image folder = new Image(FileCopiedCell.class.getResourceAsStream("/Folder.png"));
+    private ContextMenu            contextMenu;
 
     private final static Logger logger = Logger.getLogger(RemoteFilesCell.class);
 }

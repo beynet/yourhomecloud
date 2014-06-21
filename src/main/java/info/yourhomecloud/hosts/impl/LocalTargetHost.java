@@ -84,5 +84,13 @@ public class LocalTargetHost implements TargetHost {
         Files.walkFileTree(target, removeVisitor);
     }
 
+    @Override
+    public void removeFile(Path rel) throws IOException {
+        Path newFile = target.resolve(rel);
+        if (Files.exists(newFile)) {
+            Files.delete(newFile);
+        }
+    }
+
     private final static Logger logger  = Logger.getLogger(LocalTargetHost.class);
 }

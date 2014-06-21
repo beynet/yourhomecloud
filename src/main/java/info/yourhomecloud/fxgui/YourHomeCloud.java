@@ -5,46 +5,29 @@
 package info.yourhomecloud.fxgui;
 
 import info.yourhomecloud.configuration.Configuration;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-
 import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.files.FileSyncer;
 import info.yourhomecloud.files.FileSyncerBuilder;
-import info.yourhomecloud.gui.HostsSelector;
 import info.yourhomecloud.hosts.TargetHost;
 import info.yourhomecloud.hosts.TargetHostBuilder;
 import info.yourhomecloud.network.NetworkUtils;
 import info.yourhomecloud.network.broadcast.BroadcasterListener;
-import info.yourhomecloud.network.rmi.FileUtils;
 import info.yourhomecloud.network.rmi.RMIUtils;
-import info.yourhomecloud.utils.FileTools;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.MenuItemBuilder;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -52,7 +35,16 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
-import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  *
@@ -75,45 +67,27 @@ public class YourHomeCloud extends Application {
     
     protected void configurationChanged(Configuration conf, Configuration.Change change) {
         if (Configuration.Change.HOSTNAME.equals(change)) {
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    setTitle();
-                }
-            });
+            Platform.runLater(()->setTitle());
         }
         else if (Configuration.Change.DIRECTORIES_TO_BE_SAVED.equals(change)) {
             /* Create and display the form */
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    pathToBeSaved.setListContent(Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot());
-                }
-            });
+            Platform.runLater(()->pathToBeSaved.setListContent(Configuration.getConfiguration().getDirectoriesToBeSavedSnapshot()));
 
         }
         else if (Configuration.Change.NETWORK_INTERFACE.equals(change)) {
             /* Create and display the form */
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    ((NetworkStatus) networkStatus).updateInterface();
-                }
-            });
+            Platform.runLater(()->networkStatus.updateInterface());
         }
         else if (Configuration.Change.OTHER_HOSTS.equals(change)) {
             /* Create and display the form */
-            Platform.runLater(() -> ((NetworkStatus) networkStatus).updateOtherHosts());
+            Platform.runLater(() -> networkStatus.updateOtherHosts());
         }
         else if (Configuration.Change.MAIN_HOST.equals(change)) {
             /* Create and display the form */
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    ((NetworkStatus) networkStatus).updateMainHost();
+            Platform.runLater(()-> {
+                    networkStatus.updateMainHost();
                     nst.updateNetworkStatus();
-                }
-            });
+                });
         }
         
     }
@@ -156,15 +130,12 @@ public class YourHomeCloud extends Application {
         // menu item to change current host name
         MenuItem changeHostName = new MenuItem("change current host name");
         menu.getItems().add(changeHostName);
-        changeHostName.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
+        changeHostName.setOnAction((t)->{
                 currentStage.setOpacity(0.5);
                 ChangeHostName ch = new ChangeHostName(currentStage);
                 ch.sizeToScene();
                 ch.show();
-            }
-        });
+            });
         
         
         // menu item to show directory chooser

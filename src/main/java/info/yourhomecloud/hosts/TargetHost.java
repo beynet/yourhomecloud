@@ -51,6 +51,13 @@ public interface TargetHost {
     void removeFilesRemovedOnSourceSide(Path source) throws IOException;
 
     /**
+     * remove a file on remote side
+     * @param rel : the rel path
+     * @throws IOException
+     */
+    void removeFile(Path rel) throws IOException;
+
+    /**
      * list child files of the given file. This method is
      * not recursive, child directories will not be traversed. Given file path must be a
      * relative file path (relative to the directory where files will be backuped)

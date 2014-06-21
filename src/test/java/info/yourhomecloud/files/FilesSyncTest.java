@@ -65,6 +65,8 @@ public class FilesSyncTest extends RootTest{
         remoteCopy(Paths.get("/Users/beynet/Desktop"), new RMITargetHost(Configuration.getConfiguration().getCurrentHostKey(), "127.0.0.1", RMIUtils.getRMIUtils().getPort()));
     }
 
+
+
     @Test
     public void visitOneLevel() throws IOException {
 
@@ -138,6 +140,18 @@ public class FilesSyncTest extends RootTest{
         for (File child :file.getChilds()) {
             logger.debug("check file " + child.getPath());
             assertTrue(oneLevelVisitor.getResult().contains(child));
+        }
+    }
+
+    @Test
+    public void copyAndRemoveRemote() {
+        final String property = System.getProperty("java.io.tempdir");
+        final Path rootTmpDir = Paths.get(property);
+        final Path tmpDir1 = null;
+        try {
+            tmpDir1=Files.createTempDirectory(rootTmpDir, "d1");
+        }finally {
+            if (tmpDir1!=null) Files.delete(tmpDir1);
         }
     }
 

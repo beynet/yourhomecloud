@@ -77,6 +77,11 @@ public class RMITargetHost implements TargetHost {
     }
 
     @Override
+    public void removeFile(Path rel) throws IOException {
+        fileUtils.removeFile(Configuration.getConfiguration().getCurrentHostKey(),FileTools.getPathListFromPath(rel));
+    }
+
+    @Override
     public boolean isFileExisting(Path rel) throws IOException {
         return fileUtils.isFileExisting(Configuration.getConfiguration().getCurrentHostKey(), FileTools.getPathListFromPath(rel));
     }

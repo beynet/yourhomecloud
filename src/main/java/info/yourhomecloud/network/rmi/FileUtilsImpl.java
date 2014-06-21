@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
+import java.rmi.RemoteException;
 import java.util.List;
 
 import info.yourhomecloud.utils.FileTools;
@@ -68,6 +69,16 @@ public class FileUtilsImpl implements FileUtils {
         logger.debug("writing file " + filePath);
         Files.write(filePath, file);
         Files.setLastModifiedTime(filePath, FileTime.fromMillis(modified));
+    }
+
+    @Override
+    public void removeFile(String client, List<String> rel) throws IOException {
+        Path target = getTargetPathFromClient(client);
+        Path relPath = FileTools.getPathFromPathList(rel);
+        Path filePath = target.resolve(relPath);
+        if (Files.exists(filePath)) {
+            Files.delete(filePath);
+        }
     }
 
     @Override

@@ -55,6 +55,13 @@ public interface FileUtils extends Remote {
     void copyFileByChunk(String client,byte[] file,long offset,int length,boolean last,long modified, List<String> rel) throws RemoteException,IOException;
 
     /**
+     * remove file
+     * @param client
+     * @param rel
+     */
+    void removeFile(String client,List<String> rel) throws RemoteException,IOException;
+
+    /**
      * ask to remote host if specified file existsil faut 
      * @param client
      * @param rel
