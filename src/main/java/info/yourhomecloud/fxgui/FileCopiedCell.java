@@ -20,6 +20,8 @@ public class FileCopiedCell extends TreeCell<FileCopied> {
         if (empty==true) {
             setText(null);
             setGraphic(null);
+            getStyleClass().remove(Styles.COPY_IN_PROCESS);
+            getStyleClass().remove(Styles.COPY_TERMINATED);
         }
         else {
             if (fileCopied != null) {
