@@ -17,14 +17,15 @@ public class FileCopiedCell extends TreeCell<FileCopied> {
     @Override
     protected void updateItem(FileCopied fileCopied, boolean empty) {
         super.updateItem(fileCopied, empty);
+        getStyleClass().remove(Styles.COPY_IN_PROCESS);
+        getStyleClass().remove(Styles.COPY_TERMINATED);
         if (empty==true) {
             setText(null);
             setGraphic(null);
-            getStyleClass().remove(Styles.COPY_IN_PROCESS);
-            getStyleClass().remove(Styles.COPY_TERMINATED);
         }
         else {
             if (fileCopied != null) {
+
                 if (Files.isDirectory(fileCopied.getPath())) {
                     ImageView imageView = new ImageView(folder);
                     imageView.setFitWidth(24);
