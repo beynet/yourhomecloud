@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -144,13 +145,61 @@ public class FilesSyncTest extends RootTest{
     }
 
     @Test
-    public void copyAndRemoveRemote() {
-        final String property = System.getProperty("java.io.tempdir");
+    public void copyAndRemoveRemote() throws IOException, NotBoundException {
+        final String property = System.getProperty("java.io.tmpdir");
         final Path rootTmpDir = Paths.get(property);
-        final Path tmpDir1 = null;
+        Path tmpDir1 = null;
+        Path file1 = null;
+        Path file2 = null;
         try {
             tmpDir1=Files.createTempDirectory(rootTmpDir, "d1");
+            file1 = tmpDir1.resolve("file1");
+            file2 =tmpDir1.resolve("file2");
+            Files.createFile(file1);
+            Files.createFile(file2);
+
+            RMITargetHost targetHost = new RMITargetHost(Configuration.getConfiguration().getCurrentHostKey(),"127.0.0.1", RMIUtils.getRMIUtils().getPort());
+            remoteCopy(tmpDir1, targetHost);
+
+            // search childs file in copy
+            File file = new File(FileTools.getPathListFromPath(tmpDir1.getFileName()),true);
+            targetHost.listFilesAt(file);
+
+            // search child files in origin
+            OneLevelVisitor oneLevelVisitor = new OneLevelVisitor(tmpDir1.getParent(),tmpDir1);
+            Files.walkFileTree(tmpDir1,oneLevelVisitor);
+
+            assertThat(Integer.valueOf(oneLevelVisitor.getResult().size()),is(Integer.valueOf(2)));
+            assertThat(Integer.valueOf(file.getChilds().size()),is(Integer.valueOf(oneLevelVisitor.getResult().size())));
+            File f1=null ;
+            File f2 = null;
+            for (File child :file.getChilds()) {
+                logger.debug("check file " + child.getPath());
+                if (FileTools.getPathFromPathList(child.getPath()).getFileName().equals(file1.getFileName())) {
+                    f1 = child;
+                }
+                if (FileTools.getPathFromPathList(child.getPath()).getFileName().equals(file2.getFileName())) {
+                    f2 = child;
+                }
+                assertTrue(oneLevelVisitor.getResult().contains(child));
+            }
+            assertThat(f1,notNullValue());
+            assertThat(f2,notNullValue());
+
+            targetHost.removeFile(tmpDir1.getParent().relativize(file1));
+
+            //check that remote file is removed
+            file = new File(FileTools.getPathListFromPath(tmpDir1.getFileName()),true);
+            targetHost.listFilesAt(file);
+            // check that f1 was effectively removed remotely
+            assertThat(Integer.valueOf(file.getChilds().size()),is(Integer.valueOf(1)));
+            assertThat(Boolean.valueOf(file.getChilds().contains(f2)),is(Boolean.TRUE));
+            assertThat(Boolean.valueOf(file.getChilds().contains(f1)),is(Boolean.FALSE));
+
+
         }finally {
+            if (file1!=null) Files.delete(file1);
+            if (file2!=null) Files.delete(file2);
             if (tmpDir1!=null) Files.delete(tmpDir1);
         }
     }

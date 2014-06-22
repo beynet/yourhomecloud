@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -116,6 +117,21 @@ public class RemoteFiles extends DialogNotModal {
             }
         });
     }
+
+    public void restoreFile(TreeItem<RemoteFile> selected) {
+        executor.execute(()->{
+            final TargetHost targetHost ;
+            try {
+                Path p = selected.getValue().getLocaleFile();
+                File r = selected.getValue().getRemoteFile();
+                targetHost = getTargetHost();
+                targetHost.restoreFile(p,FileTools.getPathFromPathList(r.getPath()));
+            } catch (IOException ex) {
+                Platform.runLater(() -> new Alert(this, "unable to obtain remote proxy error=" + ex.getMessage()).show());
+            }
+        });
+    }
+
 
 
     private TreeView<RemoteFile>   files ;

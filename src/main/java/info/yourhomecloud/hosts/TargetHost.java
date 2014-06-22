@@ -35,6 +35,9 @@ public interface TargetHost {
      */
     void copyFile(Path file, Path rel) throws IOException;
 
+
+    void restoreFile(Path file,Path rel) throws IOException;
+
     /**
      * @param rel
      * @return true if current file exist on remote side

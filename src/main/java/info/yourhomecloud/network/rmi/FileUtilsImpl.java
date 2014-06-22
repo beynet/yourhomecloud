@@ -7,11 +7,14 @@ import java.io.File;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -69,6 +72,49 @@ public class FileUtilsImpl implements FileUtils {
         logger.debug("writing file " + filePath);
         Files.write(filePath, file);
         Files.setLastModifiedTime(filePath, FileTime.fromMillis(modified));
+    }
+
+    @Override
+    public byte[] restoreFile(String client, List<String> rel) throws RemoteException, IOException {
+        Path target = getTargetPathFromClient(client);
+        Path relPath = FileTools.getPathFromPathList(rel);
+        Path filePath = target.resolve(relPath);
+        return Files.readAllBytes(filePath);
+    }
+
+    @Override
+    public long getFileToRestoreModificationDate(String client, List<String> rel) throws RemoteException, IOException {
+        Path target = getTargetPathFromClient(client);
+        Path relPath = FileTools.getPathFromPathList(rel);
+        Path filePath = target.resolve(relPath);
+        return Files.getLastModifiedTime(filePath).toMillis();
+    }
+
+    @Override
+    public long getFileToRestoreSize(String client, List<String> rel) throws RemoteException, IOException {
+        Path target = getTargetPathFromClient(client);
+        Path relPath = FileTools.getPathFromPathList(rel);
+        Path filePath = target.resolve(relPath);
+        BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+        return attrs.size();
+    }
+
+    @Override
+    public byte[] restoreFileByChunk(String client, List<String> rel, long offset, int length) throws RemoteException, IOException {
+        logger.debug("read from "+offset+" length="+length);
+        Path target = getTargetPathFromClient(client);
+        Path relPath = FileTools.getPathFromPathList(rel);
+        Path filePath = target.resolve(relPath);
+        final SeekableByteChannel seekableByteChannel = Files.newByteChannel(filePath);
+        seekableByteChannel.position(offset);
+        ByteBuffer bf = ByteBuffer.allocate(length);
+        int totalRead = 0;
+        while (totalRead!=length) {
+            final int read = seekableByteChannel.read(bf);
+            if (read==-1) throw new IOException("reach en of stream");
+            if (read>0) totalRead+=read;
+        }
+        return bf.array();
     }
 
     @Override

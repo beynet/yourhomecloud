@@ -29,6 +29,8 @@ public class RemoteFilesCell extends TreeCell<RemoteFile> {
         contextMenu = new ContextMenu();
         MenuItem remove = new MenuItem("remove");
         contextMenu.getItems().add(remove);
+        MenuItem restore = new MenuItem("restore");
+        contextMenu.getItems().add(restore);
 
         remove.setOnAction((evt)->{
             TreeItem<RemoteFile> selected = getTreeView().getSelectionModel().getSelectedItem();
@@ -36,6 +38,14 @@ public class RemoteFilesCell extends TreeCell<RemoteFile> {
                 remoteFiles.removeFile(selected);
             }
         });
+
+        restore.setOnAction((evt)->{
+            TreeItem<RemoteFile> selected = getTreeView().getSelectionModel().getSelectedItem();
+            if (selected!=null) {
+                remoteFiles.restoreFile(selected);
+            }
+        });
+
 
     }
 

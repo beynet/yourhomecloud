@@ -81,6 +81,12 @@ public interface FileUtils extends Remote {
      */
     File listFilesAt(String client,File file) throws RemoteException,IOException;
 
+
+    byte[] restoreFile(String client, List<String> rel) throws RemoteException, IOException;
+    byte[] restoreFileByChunk(String client, List<String> rel,long offset,int length) throws RemoteException, IOException;
+    long   getFileToRestoreModificationDate(String client, List<String> rel) throws RemoteException, IOException;
+    long    getFileToRestoreSize(String client, List<String> rel) throws RemoteException, IOException;
+
 //    void removeFilesRemovedOnSourceSide(String client,Path source) throws IOException;
     
 }

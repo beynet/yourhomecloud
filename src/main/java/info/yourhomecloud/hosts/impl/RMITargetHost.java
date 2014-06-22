@@ -7,10 +7,12 @@ import info.yourhomecloud.network.rmi.RMIUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -46,34 +48,60 @@ public class RMITargetHost implements TargetHost {
         logger.debug("copy by chunk " + file.toString());
         long size = attrs.size();
         long done = 0;
-        byte[] bytes = new byte[1024 * 1024];
-        InputStream is = Files.newInputStream(file);
-        final String currentHostKey = Configuration.getConfiguration().getCurrentHostKey();
-        while (done != size) {
-            int read = is.read(bytes);
-            if (read == -1) {
-                break;
+        byte[] bytes = new byte[MAX_SIZE];
+        try (InputStream is = Files.newInputStream(file)) {
+            final String currentHostKey = Configuration.getConfiguration().getCurrentHostKey();
+            while (done != size) {
+                int read = is.read(bytes);
+                if (read == -1) {
+                    break;
+                }
+                long offset = done;
+                done += read;
+                final boolean last;
+                if (done == size) {
+                    last = true;
+                } else {
+                    last = false;
+                }
+                fileUtils.copyFileByChunk(currentHostKey, bytes, offset, read, last, attrs.lastModifiedTime().toMillis(), FileTools.getPathListFromPath(rel));
             }
-            long offset = done;
-            done += read;
-            final boolean last;
-            if (done == size) {
-                last = true;
-            } else {
-                last = false;
-            }
-            fileUtils.copyFileByChunk(currentHostKey, bytes, offset, read, last, attrs.lastModifiedTime().toMillis(), FileTools.getPathListFromPath(rel));
         }
     }
 
     @Override
     public void copyFile(Path file, Path rel) throws IOException {
         BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-        if (attrs.size() > (1024L * 1014L)) {
+        if (attrs.size() > (MAX_SIZE)) {
             copyByChunk(file, attrs, rel);
         } else {
             fileUtils.copyFile(Configuration.getConfiguration().getCurrentHostKey(), Files.readAllBytes(file), attrs.lastModifiedTime().toMillis(), FileTools.getPathListFromPath(rel));
         }
+    }
+
+    @Override
+    public void restoreFile(Path file, Path rel) throws IOException {
+        final List<String> pathListFromPath = FileTools.getPathListFromPath(rel);
+        long modified = fileUtils.getFileToRestoreModificationDate(Configuration.getConfiguration().getCurrentHostKey(), pathListFromPath);
+        long size = fileUtils.getFileToRestoreSize(Configuration.getConfiguration().getCurrentHostKey(), pathListFromPath);
+        if (size> MAX_SIZE) {
+            logger.debug("restore by chunk " + file.toString());
+            long read = 0;
+            long remain = size;
+            try(OutputStream os = Files.newOutputStream(file)) {
+                while (read != size) {
+                    int toRead = remain > MAX_SIZE ? MAX_SIZE : (int) remain;
+                    byte[] resp = fileUtils.restoreFileByChunk(Configuration.getConfiguration().getCurrentHostKey(), pathListFromPath, read, toRead);
+                    os.write(resp);
+                    read += toRead;
+                    remain -= toRead;
+                }
+            }
+        } else {
+            final byte[] bytes = fileUtils.restoreFile(Configuration.getConfiguration().getCurrentHostKey(), pathListFromPath);
+            Files.write(file,bytes);
+        }
+        Files.setLastModifiedTime(file, FileTime.fromMillis(modified));
     }
 
     @Override
@@ -100,4 +128,6 @@ public class RMITargetHost implements TargetHost {
     }
 
     Logger logger = Logger.getLogger(RMITargetHost.class);
+
+    public final static int MAX_SIZE = 1024 * 1024;
 }

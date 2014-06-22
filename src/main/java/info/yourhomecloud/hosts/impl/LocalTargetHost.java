@@ -79,6 +79,13 @@ public class LocalTargetHost implements TargetHost {
     }
 
     @Override
+    public void restoreFile(Path file,Path rel) throws IOException {
+        Path toRestore = target.resolve(rel);
+        logger.debug("restore file "+toRestore+" at "+file);
+        Files.copy(toRestore, file,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.COPY_ATTRIBUTES);
+    }
+
+    @Override
     public void removeFilesRemovedOnSourceSide(Path source) throws IOException {
         final RemoveFileRemovedInOriginal removeVisitor = new RemoveFileRemovedInOriginal(target, new LocalTargetHost(source));
         Files.walkFileTree(target, removeVisitor);

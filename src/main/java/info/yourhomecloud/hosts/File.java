@@ -42,6 +42,7 @@ public class File implements Serializable {
         return childs;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,6 +51,7 @@ public class File implements Serializable {
         File file = (File) o;
 
         if (isDirectory != file.isDirectory) return false;
+        if (lastModified != file.lastModified) return false;
         if (!childs.equals(file.childs)) return false;
         if (!path.equals(file.path)) return false;
 
@@ -61,6 +63,7 @@ public class File implements Serializable {
         int result = (isDirectory ? 1 : 0);
         result = 31 * result + path.hashCode();
         result = 31 * result + childs.hashCode();
+        result = 31 * result + (int) (lastModified ^ (lastModified >>> 32));
         return result;
     }
 
