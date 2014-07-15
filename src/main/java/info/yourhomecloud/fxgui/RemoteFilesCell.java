@@ -56,6 +56,9 @@ public class RemoteFilesCell extends TreeCell<RemoteFile> {
             setText(null);
             setGraphic(null);
             setContextMenu(null);
+            // remove all styles
+            getStyleClass().remove(Styles.LOCALE_FILE_REMOVED);
+            getStyleClass().remove(Styles.REMOTE_FILE_OBSOLETE);
         }
         else {
             if (item != null) {
