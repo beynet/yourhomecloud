@@ -5,14 +5,14 @@
 package info.yourhomecloud.fxgui;
 
 import info.yourhomecloud.configuration.Configuration;
-import java.nio.file.Paths;
-import java.util.List;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  *

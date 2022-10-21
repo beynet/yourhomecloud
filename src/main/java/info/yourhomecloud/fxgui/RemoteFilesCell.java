@@ -1,9 +1,6 @@
 package info.yourhomecloud.fxgui;
 
-import info.yourhomecloud.configuration.HostConfigurationBean;
 import info.yourhomecloud.hosts.File;
-import info.yourhomecloud.hosts.TargetHost;
-import info.yourhomecloud.hosts.TargetHostBuilder;
 import info.yourhomecloud.utils.FileTools;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;

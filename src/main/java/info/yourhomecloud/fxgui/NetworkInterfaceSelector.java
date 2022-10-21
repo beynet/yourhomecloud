@@ -6,8 +6,6 @@ package info.yourhomecloud.fxgui;
 
 import info.yourhomecloud.configuration.Configuration;
 import info.yourhomecloud.network.NetworkUtils;
-import java.io.IOException;
-import java.net.NetworkInterface;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,6 +17,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import java.io.IOException;
+import java.net.NetworkInterface;
 
 /**
  *

@@ -23,10 +23,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.MenuItemBuilder;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -230,7 +226,9 @@ public class YourHomeCloud extends Application {
         
         
         // menu item to quit application
-        MenuItem quit = MenuItemBuilder.create().text("Quit").accelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.META_DOWN)).build();
+
+        //MenuItem quit = MenuItemBuilder.create().text("Quit").accelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.META_DOWN)).build();
+        MenuItem quit = new MenuItem("Quit");
         menu.getItems().add(quit);
 
         quit.setOnAction(t -> quitApp());

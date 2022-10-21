@@ -5,7 +5,6 @@ import info.yourhomecloud.files.events.EndOfCopy;
 import info.yourhomecloud.files.events.EndOfSync;
 import info.yourhomecloud.files.events.FileSyncerEvent;
 import info.yourhomecloud.files.events.StartOfSync;
-import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;

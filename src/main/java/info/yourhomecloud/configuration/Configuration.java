@@ -21,10 +21,10 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.log4j.Logger;
 
 /**
@@ -146,7 +146,7 @@ public class Configuration extends Observable {
             localHost.setHostName(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException ex) {
         }
-        localHost.setLastUpdateDate(new Long(System.currentTimeMillis()));
+        localHost.setLastUpdateDate(Long.valueOf(System.currentTimeMillis()));
         try {
             localHost.setNetworkInterface(NetworkUtils.getFirstInterface().getDisplayName());
         } catch (IOException e) {
